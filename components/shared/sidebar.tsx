@@ -11,6 +11,7 @@ import {
   ClipboardList,
   LogOut,
   Settings,
+  Building,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -34,6 +35,12 @@ const routes = [
     icon: CalendarCheck,
     href: "/attendance",
     color: "text-pink-700",
+  },
+  {
+    label: "Departments",
+    icon: Building,
+    href: "/departments",
+    color: "text-indigo-500",
   },
   {
     label: "Leaves",
@@ -85,6 +92,10 @@ export function Sidebar() {
     if (route.label === "Users") {
       // Hide users route if role is Employee
       return role !== "Employee";
+    }
+    if (route.label === "Departments") {
+      // Only Admin can see departments
+      return role === "Admin";
     }
     return true;
   });
