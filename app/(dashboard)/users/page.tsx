@@ -68,6 +68,10 @@ const userSchema = z.object({
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -116,11 +120,82 @@ export default function UsersPage() {
     createUserMutation.mutate(values);
   };
 
+  const updateUserMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof userSchema>) => {
+      return await api.put(`/users/${selectedUser._id}`, {
+        ...values,
+        roleIds: [values.roleIds],
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setIsEditOpen(false);
+      setSelectedUser(null);
+      toast.success("User updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update user");
+    },
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: async () => {
+      const newStatus =
+        selectedUser.status === "active" ? "inactive" : "active";
+      return await api.patch(`/users/${selectedUser._id}/status`, {
+        status: newStatus,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setIsDeleteOpen(false);
+      const action =
+        selectedUser.status === "active" ? "deactivated" : "activated";
+      setSelectedUser(null);
+      toast.success(`User ${action} successfully`);
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || "Failed to update user status"
+      );
+    },
+  });
+
+  const onEdit = (values: z.infer<typeof userSchema>) => {
+    updateUserMutation.mutate(values);
+  };
+
+  const handleEditClick = (user: any) => {
+    setSelectedUser(user);
+    form.reset({
+      fullName: user.fullName,
+      email: user.email,
+      employeeId: user.employeeId,
+      roleIds: user.roleIds[0],
+      departmentId: user.departmentId?._id || "",
+    });
+    setIsEditOpen(true);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Users</h2>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog
+          open={isOpen}
+          onOpenChange={(v) => {
+            setIsOpen(v);
+            if (v) {
+              form.reset({
+                fullName: "",
+                email: "",
+                employeeId: "",
+                passwordHash: "password123",
+                roleIds: "Employee",
+              });
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> Add User
@@ -308,12 +383,37 @@ export default function UsersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsViewOpen(true);
+                          }}
+                        >
+                          <Search className="mr-2 h-4 w-4" /> View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEditClick(user)}>
                           <Pencil className="mr-2 h-4 w-4" /> Edit
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" /> Deactivate
+                        <DropdownMenuItem
+                          className={
+                            user.status === "active"
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsDeleteOpen(true);
+                          }}
+                        >
+                          {user.status === "active" ? (
+                            <>
+                              <Trash2 className="mr-2 h-4 w-4" /> Deactivate
+                            </>
+                          ) : (
+                            <>
+                              <Pencil className="mr-2 h-4 w-4" /> Activate
+                            </>
+                          )}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -324,6 +424,237 @@ export default function UsersPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* View User Dialog */}
+      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Details</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Full Name
+                </p>
+                <p>{selectedUser?.fullName}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Email
+                </p>
+                <p>{selectedUser?.email}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Employee ID
+                </p>
+                <p>{selectedUser?.employeeId}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Role
+                </p>
+                <p>{selectedUser?.roleIds?.join(", ")}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Department
+                </p>
+                <p>{selectedUser?.departmentId?.name || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Status
+                </p>
+                <Badge
+                  variant={
+                    selectedUser?.status === "active" ? "default" : "secondary"
+                  }
+                >
+                  {selectedUser?.status}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Phone
+                </p>
+                <p>{selectedUser?.phoneNumber || "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Date of Birth
+                </p>
+                <p>
+                  {selectedUser?.dateOfBirth
+                    ? new Date(selectedUser.dateOfBirth).toLocaleDateString()
+                    : "N/A"}
+                </p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Address
+                </p>
+                <p>{selectedUser?.address || "N/A"}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-sm font-medium text-muted-foreground">Bio</p>
+                <p>{selectedUser?.bio || "N/A"}</p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user details.</DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onEdit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="fullName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="john@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="employeeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee ID</FormLabel>
+                    <FormControl>
+                      <Input placeholder="EMP001" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="roleIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Manager">Manager</SelectItem>
+                        <SelectItem value="HR">HR</SelectItem>
+                        <SelectItem value="Employee">Employee</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="departmentId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Department</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Department" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {departments?.data?.map((dept: any) => (
+                          <SelectItem key={dept._id} value={dept._id}>
+                            {dept.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit" disabled={updateUserMutation.isPending}>
+                  {updateUserMutation.isPending && "Updating..."}
+                  {!updateUserMutation.isPending && "Update User"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Toggle Status Dialog */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedUser?.status === "active" ? "Deactivate" : "Activate"}{" "}
+              User
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to{" "}
+              {selectedUser?.status === "active" ? "deactivate" : "activate"}{" "}
+              this user?
+              {selectedUser?.status === "active"
+                ? " They will no longer be able to login."
+                : " They will be able to login again."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant={
+                selectedUser?.status === "active" ? "destructive" : "default"
+              }
+              disabled={toggleStatusMutation.isPending}
+              onClick={() => toggleStatusMutation.mutate()}
+            >
+              {toggleStatusMutation.isPending
+                ? "Processing..."
+                : selectedUser?.status === "active"
+                ? "Deactivate"
+                : "Activate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

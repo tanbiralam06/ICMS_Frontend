@@ -46,6 +46,12 @@ const routes = [
     href: "/tasks",
     color: "text-emerald-500",
   },
+  {
+    label: "My Profile",
+    icon: Settings,
+    href: "/profile",
+    color: "text-gray-500",
+  },
 ];
 
 export function Sidebar() {
