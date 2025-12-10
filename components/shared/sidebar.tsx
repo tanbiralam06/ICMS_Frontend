@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const routes = [
   {
@@ -57,6 +58,21 @@ const routes = [
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        // The auth controller sends "roles", not "roleIds"
+        const userRoles = user.roles || [];
+        setRole(userRoles[0]);
+      } catch (e) {
+        console.error("Failed to parse user from local storage", e);
+      }
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
@@ -65,6 +81,14 @@ export function Sidebar() {
     router.push("/login");
   };
 
+  const filteredRoutes = routes.filter((route) => {
+    if (route.label === "Users") {
+      // Hide users route if role is Employee
+      return role !== "Employee";
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-4 py-4 flex flex-col h-full bg-slate-900 text-white">
       <div className="px-3 py-2 flex-1">
@@ -72,7 +96,7 @@ export function Sidebar() {
           <h1 className="text-2xl font-bold">ICMS</h1>
         </Link>
         <div className="space-y-1">
-          {routes.map((route) => (
+          {filteredRoutes.map((route) => (
             <Link
               key={route.href}
               href={route.href}
