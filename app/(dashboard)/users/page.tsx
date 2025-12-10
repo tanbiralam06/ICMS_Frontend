@@ -2,10 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
 
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -69,10 +77,10 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const { data, isLoading } = useQuery({
     queryKey: ["users", search],
@@ -402,11 +410,10 @@ export default function UsersPage() {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
                           onClick={() => {
-                            setSelectedUser(user);
-                            setIsViewOpen(true);
+                            router.push(`/users/${user._id}`);
                           }}
                         >
-                          <Search className="mr-2 h-4 w-4" /> View Details
+                          <Eye className="mr-2 h-4 w-4" /> View Details
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEditClick(user)}>
                           <Pencil className="mr-2 h-4 w-4" /> Edit
@@ -441,87 +448,6 @@ export default function UsersPage() {
           </TableBody>
         </Table>
       </div>
-
-      {/* View User Dialog */}
-      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>User Details</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Full Name
-                </p>
-                <p>{selectedUser?.fullName}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Email
-                </p>
-                <p>{selectedUser?.email}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Employee ID
-                </p>
-                <p>{selectedUser?.employeeId}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Role
-                </p>
-                <p>{selectedUser?.roleIds?.join(", ")}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Department
-                </p>
-                <p>{selectedUser?.departmentId?.name || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Status
-                </p>
-                <Badge
-                  variant={
-                    selectedUser?.status === "active" ? "default" : "secondary"
-                  }
-                >
-                  {selectedUser?.status}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Phone
-                </p>
-                <p>{selectedUser?.phoneNumber || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Date of Birth
-                </p>
-                <p>
-                  {selectedUser?.dateOfBirth
-                    ? new Date(selectedUser.dateOfBirth).toLocaleDateString()
-                    : "N/A"}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Address
-                </p>
-                <p>{selectedUser?.address || "N/A"}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm font-medium text-muted-foreground">Bio</p>
-                <p>{selectedUser?.bio || "N/A"}</p>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit User Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
