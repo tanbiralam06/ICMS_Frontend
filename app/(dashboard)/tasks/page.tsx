@@ -158,6 +158,7 @@ export default function TasksPage() {
   };
 
   const [role, setRole] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -165,11 +166,33 @@ export default function TasksPage() {
       try {
         const user = JSON.parse(userStr);
         setRole(user.roles ? user.roles[0] : null);
+        setCurrentUser(user);
       } catch (e) {
         console.error("Failed to parse user from local storage", e);
       }
     }
   }, []);
+
+  const canUpdateTaskStatus = (task: any) => {
+    if (!currentUser) return false;
+
+    // Admin can update any task
+    if (currentUser.roles && currentUser.roles.includes("Admin")) {
+      return true;
+    }
+
+    // Creator can update their own task
+    if (task.createdBy?._id === currentUser.id) {
+      return true;
+    }
+
+    // Assigned users can update the task
+    if (task.assignedUsers?.some((user: any) => user._id === currentUser.id)) {
+      return true;
+    }
+
+    return false;
+  };
 
   return (
     <div className="space-y-4">
@@ -341,6 +364,7 @@ export default function TasksPage() {
                   onValueChange={(val) =>
                     updateStatusMutation.mutate({ id: task._id, status: val })
                   }
+                  disabled={!canUpdateTaskStatus(task)}
                 >
                   <SelectTrigger className="w-[130px] h-8 text-xs">
                     <div className="flex items-center">
