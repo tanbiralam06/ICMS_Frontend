@@ -54,6 +54,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Popover,
   PopoverContent,
@@ -316,24 +317,36 @@ export default function TasksPage() {
                   name="assignedUsers"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Assign To</FormLabel>
-                      <Select
-                        onValueChange={(val) => field.onChange([val])}
-                        defaultValue={field.value?.[0]}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select User" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {users?.data?.users?.map((user: any) => (
-                            <SelectItem key={user._id} value={user._id}>
-                              {user.fullName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Assign To (Select Multiple)</FormLabel>
+                      <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2">
+                        {users?.data?.users?.map((user: any) => (
+                          <div
+                            key={user._id}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              id={user._id}
+                              checked={field.value?.includes(user._id)}
+                              onCheckedChange={(checked) => {
+                                const currentValue = field.value || [];
+                                if (checked) {
+                                  field.onChange([...currentValue, user._id]);
+                                } else {
+                                  field.onChange(
+                                    currentValue.filter((id) => id !== user._id)
+                                  );
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={user._id}
+                              className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {user.fullName} ({user.email})
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
