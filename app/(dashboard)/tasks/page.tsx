@@ -394,14 +394,16 @@ export default function TasksPage() {
                     : "No due date"}
                 </span>
               </div>
-              <div className="flex -space-x-2 overflow-hidden">
+              <div className="space-y-1">
                 {task.assignedUsers?.map((user: any) => (
-                  <Avatar
-                    key={user._id}
-                    className="inline-block h-8 w-8 rounded-full ring-2 ring-background"
-                  >
-                    <AvatarFallback>{user.fullName.charAt(0)}</AvatarFallback>
-                  </Avatar>
+                  <div key={user._id} className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-xs">
+                        {user.fullName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{user.fullName}</span>
+                  </div>
                 ))}
                 {task.assignedUsers?.length === 0 && (
                   <span className="text-sm text-muted-foreground italic">
