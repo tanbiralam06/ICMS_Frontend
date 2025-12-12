@@ -12,10 +12,13 @@ import {
   LogOut,
   Settings,
   Building,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 const routes = [
   {
@@ -66,8 +69,12 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
+  const { theme, setTheme } = useTheme();
+  // Mount state to avoid hydration mismatch
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const userStr = localStorage.getItem("user");
     if (userStr) {
       try {
@@ -100,8 +107,16 @@ export function Sidebar() {
     return true;
   });
 
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div className="space-y-4 py-4 flex flex-col h-full bg-slate-900 text-white">
+    <div className="space-y-4 py-4 flex flex-col h-full bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 text-gray-900 dark:text-white transition-colors duration-200">
       <div className="px-3 py-2 flex-1">
         <Link href="/dashboard" className="flex items-center pl-3 mb-14">
           <h1 className="text-2xl font-bold">ICMS</h1>
@@ -112,10 +127,11 @@ export function Sidebar() {
               key={route.href}
               href={route.href}
               className={cn(
-                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
+                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer rounded-lg transition-colors duration-200",
+                "hover:text-gray-900 hover:bg-gray-200 dark:hover:text-white dark:hover:bg-white/10",
                 pathname === route.href
-                  ? "text-white bg-white/10"
-                  : "text-zinc-400"
+                  ? "text-gray-900 bg-gray-200 dark:text-white dark:bg-white/10"
+                  : "text-gray-500 dark:text-zinc-400"
               )}
             >
               <div className="flex items-center flex-1">
@@ -126,11 +142,24 @@ export function Sidebar() {
           ))}
         </div>
       </div>
-      <div className="px-3 py-2">
+      <div className="px-3 py-2 space-y-2">
+        <Button
+          onClick={toggleTheme}
+          variant="ghost"
+          className="w-full justify-start text-gray-500 dark:text-zinc-400 hover:text-gray-900 hover:bg-gray-200 dark:hover:text-white dark:hover:bg-white/10"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-5 w-5 mr-3" />
+          ) : (
+            <Moon className="h-5 w-5 mr-3" />
+          )}
+          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+        </Button>
+
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start text-zinc-400 hover:text-white hover:bg-white/10"
+          className="w-full justify-start text-gray-500 dark:text-zinc-400 hover:text-gray-900 hover:bg-gray-200 dark:hover:text-white dark:hover:bg-white/10"
         >
           <LogOut className="h-5 w-5 mr-3" />
           Logout
