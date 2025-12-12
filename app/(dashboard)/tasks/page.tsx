@@ -336,7 +336,7 @@ export default function TasksPage() {
                               <SelectValue placeholder="Select priority" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="z-[200]">
                             <SelectItem value="Low">Low</SelectItem>
                             <SelectItem value="Medium">Medium</SelectItem>
                             <SelectItem value="High">High</SelectItem>
@@ -372,7 +372,10 @@ export default function TasksPage() {
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent
+                            className="w-auto p-0 z-[200]"
+                            align="start"
+                          >
                             <Calendar
                               mode="single"
                               selected={field.value}
