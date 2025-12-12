@@ -14,6 +14,7 @@ import {
   Clock,
   AlertCircle,
   Maximize2,
+  Edit,
 } from "lucide-react";
 
 import api from "@/lib/api";
@@ -77,6 +78,11 @@ export default function TasksPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  // Edit mode state
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
   const queryClient = useQueryClient();
 
   const { data: tasks, isLoading } = useQuery({
@@ -105,6 +111,21 @@ export default function TasksPage() {
     },
   });
 
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      form.reset({
+        title: "",
+        description: "",
+        priority: "Medium",
+        assignedUsers: [],
+        dueDate: undefined,
+      });
+      setIsEditMode(false);
+      setEditingTaskId(null);
+    }
+  }, [isOpen, form]);
+
   const createTaskMutation = useMutation({
     mutationFn: async (values: z.infer<typeof taskSchema>) => {
       return await api.post("/tasks", values);
@@ -112,11 +133,30 @@ export default function TasksPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       setIsOpen(false);
-      form.reset();
       toast.success("Task created successfully");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Failed to create task");
+    },
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({
+      id,
+      values,
+    }: {
+      id: string;
+      values: z.infer<typeof taskSchema>;
+    }) => {
+      return await api.put(`/tasks/${id}`, values);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      setIsOpen(false);
+      toast.success("Task updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to update task");
     },
   });
 
@@ -131,7 +171,24 @@ export default function TasksPage() {
   });
 
   const onSubmit = (values: z.infer<typeof taskSchema>) => {
-    createTaskMutation.mutate(values);
+    if (isEditMode && editingTaskId) {
+      updateTaskMutation.mutate({ id: editingTaskId, values });
+    } else {
+      createTaskMutation.mutate(values);
+    }
+  };
+
+  const handleEditClick = (task: any) => {
+    setIsEditMode(true);
+    setEditingTaskId(task._id);
+    form.reset({
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+      assignedUsers: task.assignedUsers?.map((u: any) => u._id) || [],
+    });
+    setIsOpen(true);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -199,6 +256,16 @@ export default function TasksPage() {
     return false;
   };
 
+  const canEditTask = (task: any) => {
+    if (!currentUser) return false;
+    // Admin can edit any task
+    if (currentUser.roles && currentUser.roles.includes("Admin")) {
+      return true;
+    }
+    // Creator can edit their own task
+    return task.createdBy?._id === currentUser.id;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -213,9 +280,13 @@ export default function TasksPage() {
           )}
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Create New Task</DialogTitle>
+              <DialogTitle>
+                {isEditMode ? "Edit Task" : "Create New Task"}
+              </DialogTitle>
               <DialogDescription>
-                Add a new task to the board.
+                {isEditMode
+                  ? "Update task details."
+                  : "Add a new task to the board."}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -306,7 +377,9 @@ export default function TasksPage() {
                               mode="single"
                               selected={field.value}
                               onSelect={field.onChange}
-                              disabled={(date) => date < new Date()}
+                              disabled={(date) =>
+                                date < new Date() && !isEditMode
+                              } // Allow past dates if editing? Maybe not.
                               initialFocus
                             />
                           </PopoverContent>
@@ -356,9 +429,18 @@ export default function TasksPage() {
                   )}
                 />
                 <DialogFooter>
-                  <Button type="submit" disabled={createTaskMutation.isPending}>
-                    {createTaskMutation.isPending
-                      ? "Creating..."
+                  <Button
+                    type="submit"
+                    disabled={
+                      createTaskMutation.isPending ||
+                      updateTaskMutation.isPending
+                    }
+                  >
+                    {createTaskMutation.isPending ||
+                    updateTaskMutation.isPending
+                      ? "Saving..."
+                      : isEditMode
+                      ? "Update Task"
                       : "Create Task"}
                   </Button>
                 </DialogFooter>
@@ -377,7 +459,17 @@ export default function TasksPage() {
                   {task.priority}
                 </Badge>
                 <div className="flex gap-2">
-                  <Button
+                  {canEditTask(task) && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleEditClick(task)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {/* <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
@@ -387,7 +479,7 @@ export default function TasksPage() {
                     }}
                   >
                     <Maximize2 className="h-4 w-4" />
-                  </Button>
+                  </Button> */}
                   <Select
                     defaultValue={task.status}
                     onValueChange={(val) =>
@@ -456,9 +548,16 @@ export default function TasksPage() {
                 )}
               </div>
             </CardContent>
-            <CardFooter className="pt-2 border-t text-xs text-muted-foreground flex justify-between">
-              <span>Created by {task.createdBy?.fullName}</span>
-              <span>{format(new Date(task.createdAt), "MMM d")}</span>
+            <CardFooter className="pt-2 border-t text-xs text-muted-foreground flex flex-col items-start gap-1">
+              <div className="flex justify-between w-full">
+                <span>Created by {task.createdBy?.fullName}</span>
+                <span>{format(new Date(task.createdAt), "MMM d, yy")}</span>
+              </div>
+              {task.updatedAt && task.updatedAt !== task.createdAt && (
+                <div className="w-full text-right italic text-[10px] opacity-70">
+                  Updated: {format(new Date(task.updatedAt), "MMM d, h:mm a")}
+                </div>
+              )}
             </CardFooter>
           </Card>
         ))}
