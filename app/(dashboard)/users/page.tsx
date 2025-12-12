@@ -378,7 +378,11 @@ export default function UsersPage() {
               </TableRow>
             ) : (
               data?.data?.users?.map((user: any) => (
-                <TableRow key={user._id}>
+                <TableRow
+                  key={user._id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => router.push(`/users/${user._id}`)}
+                >
                   <TableCell className="font-medium">{user.fullName}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
@@ -400,7 +404,10 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger
+                        asChild
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Button variant="ghost" className="h-8 w-8 p-0">
                           <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
@@ -409,13 +416,19 @@ export default function UsersPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             router.push(`/users/${user._id}`);
                           }}
                         >
                           <Eye className="mr-2 h-4 w-4" /> View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEditClick(user)}>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditClick(user);
+                          }}
+                        >
                           <Pencil className="mr-2 h-4 w-4" /> Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -424,7 +437,8 @@ export default function UsersPage() {
                               ? "text-red-600"
                               : "text-green-600"
                           }
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedUser(user);
                             setIsDeleteOpen(true);
                           }}
