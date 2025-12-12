@@ -13,9 +13,11 @@ import {
   Circle,
   Clock,
   AlertCircle,
+  Maximize2,
 } from "lucide-react";
 
 import api from "@/lib/api";
+import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -73,6 +75,8 @@ const taskSchema = z.object({
 
 export default function TasksPage() {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: tasks, isLoading } = useQuery({
@@ -372,29 +376,56 @@ export default function TasksPage() {
                 <Badge className={cn("mb-2", getPriorityColor(task.priority))}>
                   {task.priority}
                 </Badge>
-                <Select
-                  defaultValue={task.status}
-                  onValueChange={(val) =>
-                    updateStatusMutation.mutate({ id: task._id, status: val })
-                  }
-                  disabled={!canUpdateTaskStatus(task)}
-                >
-                  <SelectTrigger className="w-[130px] h-8 text-xs">
-                    <div className="flex items-center">
-                      {getStatusIcon(task.status)}
-                      <span className="ml-2">{task.status}</span>
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Todo">Todo</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Review">Review</SelectItem>
-                    <SelectItem value="Done">Done</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      setSelectedTask(task);
+                      setIsDetailOpen(true);
+                    }}
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                  </Button>
+                  <Select
+                    defaultValue={task.status}
+                    onValueChange={(val) =>
+                      updateStatusMutation.mutate({ id: task._id, status: val })
+                    }
+                    disabled={!canUpdateTaskStatus(task)}
+                  >
+                    <SelectTrigger className="w-[130px] h-8 text-xs">
+                      <div className="flex items-center">
+                        {getStatusIcon(task.status)}
+                        <span className="ml-2">{task.status}</span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Todo">Todo</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Review">Review</SelectItem>
+                      <SelectItem value="Done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <CardTitle className="text-lg">{task.title}</CardTitle>
-              <CardDescription className="line-clamp-2">
+              <CardTitle
+                className="text-lg cursor-pointer hover:underline"
+                onClick={() => {
+                  setSelectedTask(task);
+                  setIsDetailOpen(true);
+                }}
+              >
+                {task.title}
+              </CardTitle>
+              <CardDescription
+                className="line-clamp-2 cursor-pointer"
+                onClick={() => {
+                  setSelectedTask(task);
+                  setIsDetailOpen(true);
+                }}
+              >
                 {task.description}
               </CardDescription>
             </CardHeader>
@@ -437,6 +468,16 @@ export default function TasksPage() {
           </div>
         )}
       </div>
+
+      <TaskDetailModal
+        task={selectedTask}
+        isOpen={isDetailOpen}
+        onClose={() => {
+          setIsDetailOpen(false);
+          setSelectedTask(null);
+        }}
+        currentUser={currentUser}
+      />
     </div>
   );
 }
