@@ -34,16 +34,16 @@ const routes = [
     color: "text-violet-500",
   },
   {
-    label: "Attendance",
-    icon: CalendarCheck,
-    href: "/attendance",
-    color: "text-pink-700",
-  },
-  {
     label: "Departments",
     icon: Building,
     href: "/departments",
     color: "text-indigo-500",
+  },
+  {
+    label: "Attendance",
+    icon: CalendarCheck,
+    href: "/attendance",
+    color: "text-pink-700",
   },
   {
     label: "Leaves",
