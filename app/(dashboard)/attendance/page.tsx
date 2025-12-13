@@ -8,6 +8,8 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 import api from "@/lib/api";
@@ -28,6 +30,8 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -43,6 +47,8 @@ export default function AttendancePage() {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [adminDate, setAdminDate] = useState<Date | undefined>(new Date());
   const [role, setRole] = useState<string | null>(null);
+  const [newHolidayName, setNewHolidayName] = useState("");
+  const [newHolidayDate, setNewHolidayDate] = useState<Date | undefined>();
 
   // Need to get role for permission check - reusing logic from sidebar or similar
   // Ideally this should be in a global store context, but reading from localStorage for now as confirmed by existing patterns
@@ -91,6 +97,46 @@ export default function AttendancePage() {
     enabled: !!adminDate && role !== "Employee",
   });
 
+  const { data: holidays, refetch: refetchHolidays } = useQuery({
+    queryKey: ["holidays"],
+    queryFn: async () => {
+      const res = await api.get("/holidays");
+      return res.data;
+    },
+  });
+
+  const addHolidayMutation = useMutation({
+    mutationFn: async () => {
+      if (!newHolidayName || !newHolidayDate) return;
+      return await api.post("/holidays", {
+        name: newHolidayName,
+        date: newHolidayDate,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Holiday added successfully");
+      setNewHolidayName("");
+      setNewHolidayDate(undefined);
+      refetchHolidays();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to add holiday");
+    },
+  });
+
+  const deleteHolidayMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await api.delete(`/holidays/${id}`);
+    },
+    onSuccess: () => {
+      toast.success("Holiday deleted successfully");
+      refetchHolidays();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to delete holiday");
+    },
+  });
+
   const punchMutation = useMutation({
     mutationFn: async () => {
       return await api.post("/attendance/punch");
@@ -113,6 +159,7 @@ export default function AttendancePage() {
       <Tabs defaultValue="my-attendance" className="space-y-4">
         <TabsList>
           <TabsTrigger value="my-attendance">My Attendance</TabsTrigger>
+          <TabsTrigger value="holidays">Holidays</TabsTrigger>
           {role !== "Employee" && (
             <TabsTrigger value="admin-view">Admin View</TabsTrigger>
           )}
@@ -283,6 +330,122 @@ export default function AttendancePage() {
           </div>
         </TabsContent>
 
+        <TabsContent value="holidays" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Holidays</CardTitle>
+              <CardDescription>
+                List of holidays for the current year. Sundays are Weekly Off by
+                default.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {role !== "Employee" && (
+                <div className="flex items-end gap-4 mb-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                  <div className="grid w-full max-w-sm items-center gap-1.5">
+                    <Label htmlFor="holiday-name">Holiday Name</Label>
+                    <Input
+                      id="holiday-name"
+                      placeholder="e.g. New Year"
+                      value={newHolidayName}
+                      onChange={(e) => setNewHolidayName(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid w-full max-w-sm items-center gap-1.5">
+                    <Label>Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] justify-start text-left font-normal",
+                            !newHolidayDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newHolidayDate ? (
+                            format(newHolidayDate, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={newHolidayDate}
+                          onSelect={setNewHolidayDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <Button
+                    onClick={() => addHolidayMutation.mutate()}
+                    disabled={
+                      addHolidayMutation.isPending ||
+                      !newHolidayName ||
+                      !newHolidayDate
+                    }
+                  >
+                    {addHolidayMutation.isPending ? (
+                      "Adding..."
+                    ) : (
+                      <>
+                        <Plus className="mr-2 h-4 w-4" /> Add Holiday
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                {holidays?.data?.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    No holidays declared yet.
+                  </div>
+                ) : (
+                  holidays?.data?.map((holiday: any) => (
+                    <div
+                      key={holiday._id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-center justify-center w-14 h-14 bg-primary/10 rounded-lg text-primary">
+                          <span className="text-xs font-bold uppercase">
+                            {format(new Date(holiday.date), "MMM")}
+                          </span>
+                          <span className="text-xl font-bold">
+                            {format(new Date(holiday.date), "dd")}
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">{holiday.name}</h4>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(holiday.date), "EEEE")}
+                          </span>
+                        </div>
+                      </div>
+                      {role !== "Employee" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                          onClick={() =>
+                            deleteHolidayMutation.mutate(holiday._id)
+                          }
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {role !== "Employee" && (
           <TabsContent value="admin-view" className="space-y-4">
             <Card>
@@ -382,6 +545,9 @@ export default function AttendancePage() {
                             >
                               {record.status === "On Leave" && record.leaveType
                                 ? `${record.status} (${record.leaveType})`
+                                : record.status === "Holiday" &&
+                                  record.holidayName
+                                ? `${record.status}: ${record.holidayName}`
                                 : record.status}
                             </Badge>
                           </TableCell>
