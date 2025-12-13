@@ -72,6 +72,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
@@ -91,6 +101,10 @@ export default function TasksPage() {
   // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
+  // Delete mode state
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<any>(null);
 
   const queryClient = useQueryClient();
 
@@ -531,13 +545,8 @@ export default function TasksPage() {
                           <DropdownMenuItem
                             className="text-red-600 focus:text-red-600"
                             onClick={() => {
-                              if (
-                                window.confirm(
-                                  "Are you sure you want to delete this task?"
-                                )
-                              ) {
-                                deleteTaskMutation.mutate(task._id);
-                              }
+                              setTaskToDelete(task);
+                              setIsDeleteAlertOpen(true);
                             }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -624,6 +633,35 @@ export default function TasksPage() {
         }}
         currentUser={currentUser}
       />
+
+      <AlertDialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              task "{taskToDelete?.title}" and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setTaskToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                if (taskToDelete) {
+                  deleteTaskMutation.mutate(taskToDelete._id);
+                  setIsDeleteAlertOpen(false);
+                  setTaskToDelete(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
