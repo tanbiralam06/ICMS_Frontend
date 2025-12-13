@@ -15,11 +15,20 @@ import {
   AlertCircle,
   Maximize2,
   Edit,
+  MoreVertical,
+  Eye,
+  Trash2,
 } from "lucide-react";
 
 import api from "@/lib/api";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Card,
   CardContent,
@@ -167,6 +176,19 @@ export default function TasksPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       toast.success("Task status updated");
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await api.delete(`/tasks/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast.success("Task deleted successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to delete task");
     },
   });
 
@@ -462,27 +484,6 @@ export default function TasksPage() {
                   {task.priority}
                 </Badge>
                 <div className="flex gap-2">
-                  {canEditTask(task) && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleEditClick(task)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {/* <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => {
-                      setSelectedTask(task);
-                      setIsDetailOpen(true);
-                    }}
-                  >
-                    <Maximize2 className="h-4 w-4" />
-                  </Button> */}
                   <Select
                     defaultValue={task.status}
                     onValueChange={(val) =>
@@ -503,6 +504,49 @@ export default function TasksPage() {
                       <SelectItem value="Done">Done</SelectItem>
                     </SelectContent>
                   </Select>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedTask(task);
+                          setIsDetailOpen(true);
+                        }}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        View
+                      </DropdownMenuItem>
+                      {canEditTask(task) && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => handleEditClick(task)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Update Task
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-red-600 focus:text-red-600"
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  "Are you sure you want to delete this task?"
+                                )
+                              ) {
+                                deleteTaskMutation.mutate(task._id);
+                              }
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Task
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               <CardTitle
