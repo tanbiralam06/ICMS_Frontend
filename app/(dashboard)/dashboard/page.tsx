@@ -56,6 +56,37 @@ const CHART_COLORS = [
   "#6366F1",
 ];
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-popover p-2 shadow-md outline-none">
+        {label && (
+          <div className="text-sm font-semibold text-popover-foreground mb-1">
+            {label}
+          </div>
+        )}
+        <div className="flex flex-col gap-1">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center gap-2">
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="text-sm text-muted-foreground capitalize">
+                {entry.name}:
+              </span>
+              <span className="text-sm font-medium text-popover-foreground">
+                {entry.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function DashboardPage() {
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
@@ -191,7 +222,7 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" tick={{ fontSize: 12 }} />
                 <YAxis />
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
                 <Legend />
                 <Area
                   type="monotone"
@@ -226,7 +257,10 @@ export default function DashboardPage() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="status" tick={{ fontSize: 12 }} />
                 <YAxis />
-                <Tooltip />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: "transparent" }}
+                />
                 <Legend />
                 <Bar dataKey="count" fill={COLORS.purple} name="Tasks" />
               </BarChart>
@@ -268,7 +302,7 @@ export default function DashboardPage() {
                     )
                   )}
                 </Pie>
-                <Tooltip />
+                <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -294,7 +328,10 @@ export default function DashboardPage() {
                   tick={{ fontSize: 12 }}
                   width={100}
                 />
-                <Tooltip />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: "transparent" }}
+                />
                 <Legend />
                 <Bar dataKey="count" fill={COLORS.primary} name="Employees" />
               </BarChart>
