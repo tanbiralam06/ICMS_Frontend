@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Send, User as UserIcon, X } from "lucide-react";
+import {
+  Send,
+  User as UserIcon,
+  X,
+  Paperclip,
+  ExternalLink,
+} from "lucide-react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -171,6 +177,39 @@ export function TaskDetailModal({
                 </div>
               </div>
             </div>
+
+            {task.attachments && task.attachments.length > 0 && (
+              <div>
+                <h4 className="font-semibold mb-2 text-foreground/80 flex items-center gap-2">
+                  <Paperclip className="h-4 w-4" /> Attachments
+                </h4>
+                <div className="flex flex-wrap gap-3">
+                  {task.attachments.map((attachment: string, index: number) => {
+                    const fileName = attachment.split("/").pop();
+                    const fileUrl = `${
+                      process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") ||
+                      "http://localhost:5000"
+                    }/${attachment}`;
+                    return (
+                      <a
+                        key={index}
+                        href={fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-secondary/50 p-2 rounded-md px-3 border hover:bg-secondary transition-colors"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium truncate max-w-[150px]">
+                            {fileName}
+                          </span>
+                        </div>
+                        <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column: Comments */}
