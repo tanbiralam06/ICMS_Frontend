@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
+import { DateRange } from "react-day-picker";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -48,7 +49,9 @@ export default function AttendancePage() {
   const [adminDate, setAdminDate] = useState<Date | undefined>(new Date());
   const [role, setRole] = useState<string | null>(null);
   const [newHolidayName, setNewHolidayName] = useState("");
-  const [newHolidayDate, setNewHolidayDate] = useState<Date | undefined>();
+  const [newHolidayRange, setNewHolidayRange] = useState<
+    DateRange | undefined
+  >();
 
   // Need to get role for permission check - reusing logic from sidebar or similar
   // Ideally this should be in a global store context, but reading from localStorage for now as confirmed by existing patterns
@@ -107,16 +110,17 @@ export default function AttendancePage() {
 
   const addHolidayMutation = useMutation({
     mutationFn: async () => {
-      if (!newHolidayName || !newHolidayDate) return;
+      if (!newHolidayName || !newHolidayRange?.from) return;
       return await api.post("/holidays", {
         name: newHolidayName,
-        date: newHolidayDate,
+        startDate: newHolidayRange.from,
+        endDate: newHolidayRange.to || newHolidayRange.from,
       });
     },
     onSuccess: () => {
       toast.success("Holiday added successfully");
       setNewHolidayName("");
-      setNewHolidayDate(undefined);
+      setNewHolidayRange(undefined);
       refetchHolidays();
     },
     onError: (error: any) => {
@@ -359,22 +363,36 @@ export default function AttendancePage() {
                           variant={"outline"}
                           className={cn(
                             "w-[240px] justify-start text-left font-normal",
-                            !newHolidayDate && "text-muted-foreground"
+                            !newHolidayRange && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {newHolidayDate ? (
-                            format(newHolidayDate, "PPP")
+                          {newHolidayRange?.from ? (
+                            newHolidayRange.to ? (
+                              isSameDay(
+                                newHolidayRange.from,
+                                newHolidayRange.to
+                              ) ? (
+                                format(newHolidayRange.from, "PPP")
+                              ) : (
+                                `${format(
+                                  newHolidayRange.from,
+                                  "LLL dd"
+                                )} - ${format(newHolidayRange.to, "LLL dd, y")}`
+                              )
+                            ) : (
+                              format(newHolidayRange.from, "PPP")
+                            )
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Pick a date range</span>
                           )}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0">
                         <Calendar
-                          mode="single"
-                          selected={newHolidayDate}
-                          onSelect={setNewHolidayDate}
+                          mode="range"
+                          selected={newHolidayRange}
+                          onSelect={setNewHolidayRange}
                           initialFocus
                         />
                       </PopoverContent>
@@ -385,7 +403,7 @@ export default function AttendancePage() {
                     disabled={
                       addHolidayMutation.isPending ||
                       !newHolidayName ||
-                      !newHolidayDate
+                      !newHolidayRange?.from
                     }
                   >
                     {addHolidayMutation.isPending ? (
@@ -405,41 +423,62 @@ export default function AttendancePage() {
                     No holidays declared yet.
                   </div>
                 ) : (
-                  holidays?.data?.map((holiday: any) => (
-                    <div
-                      key={holiday._id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-center justify-center w-14 h-14 bg-primary/10 rounded-lg text-primary">
-                          <span className="text-xs font-bold uppercase">
-                            {format(new Date(holiday.date), "MMM")}
-                          </span>
-                          <span className="text-xl font-bold">
-                            {format(new Date(holiday.date), "dd")}
-                          </span>
+                  holidays?.data?.map((holiday: any) => {
+                    const hStart = holiday.startDate || holiday.date;
+                    const hEnd =
+                      holiday.endDate || holiday.date || holiday.startDate;
+
+                    if (!hStart) return null;
+
+                    const holidayStartDate = new Date(hStart);
+                    const holidayEndDate = new Date(hEnd);
+
+                    return (
+                      <div
+                        key={holiday._id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col items-center justify-center w-20 h-14 bg-primary/10 rounded-lg text-primary px-2">
+                            <span className="text-[10px] font-bold uppercase">
+                              {format(holidayStartDate, "MMM")}
+                            </span>
+                            <span className="text-sm font-bold truncate w-full text-center">
+                              {isSameDay(holidayStartDate, holidayEndDate)
+                                ? format(holidayStartDate, "dd")
+                                : `${format(holidayStartDate, "dd")}-${format(
+                                    holidayEndDate,
+                                    "dd"
+                                  )}`}
+                            </span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold">{holiday.name}</h4>
+                            <span className="text-xs text-muted-foreground italic">
+                              {isSameDay(holidayStartDate, holidayEndDate)
+                                ? format(holidayStartDate, "EEEE")
+                                : `${format(
+                                    holidayStartDate,
+                                    "EEE"
+                                  )} to ${format(holidayEndDate, "EEE")}`}
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold">{holiday.name}</h4>
-                          <span className="text-xs text-muted-foreground">
-                            {format(new Date(holiday.date), "EEEE")}
-                          </span>
-                        </div>
+                        {role !== "Employee" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            onClick={() =>
+                              deleteHolidayMutation.mutate(holiday._id)
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
-                      {role !== "Employee" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                          onClick={() =>
-                            deleteHolidayMutation.mutate(holiday._id)
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </CardContent>
