@@ -63,6 +63,12 @@ const routes = [
     href: "/profile",
     color: "text-gray-500",
   },
+  {
+    label: "Company Profile",
+    icon: Building,
+    href: "/company",
+    color: "text-blue-600",
+  },
 ];
 
 export function Sidebar() {
@@ -102,6 +108,9 @@ export function Sidebar() {
     }
     if (route.label === "Departments") {
       // Only Admin can see departments
+      return role === "Admin";
+    }
+    if (route.label === "Company Profile") {
       return role === "Admin";
     }
     return true;
