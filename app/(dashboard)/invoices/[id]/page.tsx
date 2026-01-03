@@ -53,6 +53,17 @@ export default function InvoiceViewPage() {
 
   return (
     <div className="bg-neutral-100 min-h-screen p-8 print:p-0 print:bg-white flex flex-col items-center font-sans text-neutral-900">
+      <style jsx global>{`
+        @media print {
+          @page {
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+          }
+        }
+      `}</style>
       {/* Toolbar */}
       <div className="w-full max-w-[210mm] mb-6 flex justify-between items-center print:hidden">
         <Button variant="outline" onClick={() => router.back()}>
