@@ -14,11 +14,13 @@ import {
   Building,
   Moon,
   Sun,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import { Separator } from "@/components/ui/separator";
 
 const routes = [
   {
@@ -65,7 +67,7 @@ const routes = [
   },
   {
     label: "Company Profile",
-    icon: Building,
+    icon: Building2, // Using slightly different icon if available, or stay with Building
     href: "/company",
     color: "text-blue-600",
   },
@@ -76,7 +78,6 @@ export function Sidebar() {
   const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
   const { theme, setTheme } = useTheme();
-  // Mount state to avoid hydration mismatch
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -85,7 +86,6 @@ export function Sidebar() {
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
-        // The auth controller sends "roles", not "roleIds"
         const userRoles = user.roles || [];
         setRole(userRoles[0]);
       } catch (e) {
@@ -102,17 +102,9 @@ export function Sidebar() {
   };
 
   const filteredRoutes = routes.filter((route) => {
-    if (route.label === "Users") {
-      // Hide users route if role is Employee
-      return role !== "Employee";
-    }
-    if (route.label === "Departments") {
-      // Only Admin can see departments
-      return role === "Admin";
-    }
-    if (route.label === "Company Profile") {
-      return role === "Admin";
-    }
+    if (route.label === "Users") return role !== "Employee";
+    if (route.label === "Departments") return role === "Admin";
+    if (route.label === "Company Profile") return role === "Admin";
     return true;
   });
 
@@ -120,58 +112,82 @@ export function Sidebar() {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
 
   return (
-    <div className="space-y-4 py-4 flex flex-col h-full bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 text-gray-900 dark:text-white transition-colors duration-200">
-      <div className="px-3 py-2 flex-1">
-        <Link href="/dashboard" className="flex items-center pl-3 mb-14">
-          <h1 className="text-2xl font-bold">ICMS</h1>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-colors duration-200">
+      {/* Brand Header */}
+      <div className="px-6 h-16 flex items-center mb-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+            I
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
+            ICMS
+          </h1>
         </Link>
-        <div className="space-y-1">
-          {filteredRoutes.map((route) => (
+      </div>
+
+      {/* Navigation */}
+      <div className="flex-1 px-3 space-y-1 overflow-y-auto scrollbar-none">
+        {filteredRoutes.map((route) => {
+          const isActive = pathname === route.href;
+          return (
             <Link
               key={route.href}
               href={route.href}
               className={cn(
-                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer rounded-lg transition-colors duration-200",
-                "hover:text-gray-900 hover:bg-gray-200 dark:hover:text-white dark:hover:bg-white/10",
-                pathname === route.href
-                  ? "text-gray-900 bg-gray-200 dark:text-white dark:bg-white/10"
-                  : "text-gray-500 dark:text-zinc-400"
+                "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-all duration-200",
+                isActive
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-700"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
               )}
             >
-              <div className="flex items-center flex-1">
-                <route.icon className={cn("h-5 w-5 mr-3", route.color)} />
-                {route.label}
-              </div>
+              <route.icon
+                className={cn(
+                  "h-4 w-4 mr-3 transition-colors",
+                  isActive
+                    ? route.color
+                    : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+                )}
+              />
+              {route.label}
+              {isActive && (
+                <div className="ml-auto w-1 h-3 rounded-full bg-blue-500" />
+              )}
             </Link>
-          ))}
-        </div>
+          );
+        })}
       </div>
-      <div className="px-3 py-2 space-y-2">
+
+      {/* Footer / Settings */}
+      <div className="p-3 mt-auto space-y-2">
+        <Separator className="bg-slate-200 dark:bg-slate-800 mb-2" />
+
         <Button
           onClick={toggleTheme}
           variant="ghost"
-          className="w-full justify-start text-gray-500 dark:text-zinc-400 hover:text-gray-900 hover:bg-gray-200 dark:hover:text-white dark:hover:bg-white/10"
+          size="sm"
+          className="w-full justify-start text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 h-9 px-3"
         >
           {theme === "dark" ? (
-            <Sun className="h-5 w-5 mr-3" />
+            <Sun className="h-4 w-4 mr-3" />
           ) : (
-            <Moon className="h-5 w-5 mr-3" />
+            <Moon className="h-4 w-4 mr-3" />
           )}
-          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          <span className="text-xs font-medium">
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
+          </span>
         </Button>
 
         <Button
           onClick={handleLogout}
           variant="ghost"
-          className="w-full justify-start text-gray-500 dark:text-zinc-400 hover:text-gray-900 hover:bg-gray-200 dark:hover:text-white dark:hover:bg-white/10"
+          size="sm"
+          className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 h-9 px-3"
         >
-          <LogOut className="h-5 w-5 mr-3" />
-          Logout
+          <LogOut className="h-4 w-4 mr-3" />
+          <span className="text-xs font-medium">Logout</span>
         </Button>
       </div>
     </div>
