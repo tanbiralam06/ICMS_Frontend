@@ -177,7 +177,7 @@ export default function InvoiceViewPage() {
         </div>
 
         {/* 3. Items Table */}
-        <div className="mb-8">
+        <div className="mb-4">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="border-b-2 border-neutral-900 text-neutral-900">
