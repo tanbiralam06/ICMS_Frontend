@@ -231,6 +231,12 @@ export default function InvoiceViewPage() {
                   <span className="font-medium">{company.bankName}</span>
                 </div>
                 <div className="flex">
+                  <span className="w-24 text-neutral-500">Acc. Name:</span>{" "}
+                  <span className="font-medium">
+                    {company.accountHolderName}
+                  </span>
+                </div>
+                <div className="flex">
                   <span className="w-24 text-neutral-500">A/C No:</span>{" "}
                   <span className="font-mono font-medium">
                     {company.accountNumber}
@@ -242,15 +248,19 @@ export default function InvoiceViewPage() {
                     {company.ifscCode}
                   </span>
                 </div>
+                {company.swiftCode && (
+                  <div className="flex">
+                    <span className="w-24 text-neutral-500">SWIFT:</span>{" "}
+                    <span className="font-mono font-medium">
+                      {company.swiftCode}
+                    </span>
+                  </div>
+                )}
                 <div className="flex">
                   <span className="w-24 text-neutral-500">Branch:</span>{" "}
                   <span className="font-medium">{company.branch}</span>
                 </div>
               </div>
-            </div>
-
-            <div className="text-xs text-neutral-400 pt-4">
-              <p>Terms & Conditions: Payment due on receipt.</p>
             </div>
           </div>
 
@@ -302,6 +312,9 @@ export default function InvoiceViewPage() {
               </p>
             </div>
           </div>
+        </div>
+        <div className="text-xs text-neutral-400 pt-4">
+          <p>Terms & Conditions: {company.termsUrl}</p>
         </div>
       </div>
     </div>
