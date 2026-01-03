@@ -15,6 +15,7 @@ import {
   Moon,
   Sun,
   Building2,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -58,6 +59,12 @@ const routes = [
     icon: ClipboardList,
     href: "/tasks",
     color: "text-emerald-500",
+  },
+  {
+    label: "Invoices",
+    icon: FileText,
+    href: "/invoices",
+    color: "text-green-600",
   },
   {
     label: "My Profile",
@@ -105,6 +112,8 @@ export function Sidebar() {
     if (route.label === "Users") return role !== "Employee";
     if (route.label === "Departments") return role === "Admin";
     if (route.label === "Company Profile") return role === "Admin";
+    if (route.label === "Invoices")
+      return role === "Admin" || role === "Manager";
     return true;
   });
 
