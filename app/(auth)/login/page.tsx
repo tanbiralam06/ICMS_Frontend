@@ -62,7 +62,7 @@ export default function LoginPage() {
 
       router.push("/dashboard");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      toast.error(error.response?.data?.error || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
