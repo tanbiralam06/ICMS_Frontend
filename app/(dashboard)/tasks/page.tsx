@@ -124,9 +124,9 @@ export default function TasksPage() {
   });
 
   const { data: users } = useQuery({
-    queryKey: ["users"],
+    queryKey: ["users", "active"],
     queryFn: async () => {
-      const res = await api.get("/users");
+      const res = await api.get("/users?status=active");
       return res.data;
     },
   });
