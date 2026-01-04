@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Loader2, Lock, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -68,20 +69,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4">
-      {/* Subtle background effects */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+    <div className="flex min-h-screen items-center justify-center p-4 relative overflow-hidden">
+      <Image
+        src="/login_desk.webp"
+        alt="Login background"
+        fill
+        className="object-cover absolute inset-0 -z-10"
+        priority
+      />
+      <div className="absolute inset-0 bg-black/60 -z-10" />
 
-      <Card className="relative w-full max-w-md border-zinc-800 bg-zinc-900/80 backdrop-blur-sm shadow-2xl">
-        <CardHeader className="space-y-2 text-center pb-8 pt-8">
-          <CardTitle className="text-3xl font-bold tracking-tight text-white">
-            Biomoneta
-          </CardTitle>
-          <CardDescription className="text-zinc-400 text-base">
-            Management System
-          </CardDescription>
+      <Card className="relative w-full max-w-md border-white/10 bg-black/30 backdrop-blur-xl shadow-2xl transition-all duration-300">
+        <CardHeader className="flex flex-col items-center pb-6 pt-10">
+          <div className="relative w-64 h-24">
+            <Image
+              src="/logo.png"
+              alt="Biomoneta Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </CardHeader>
-        <CardContent className="pb-8">
+        <CardContent className="pb-10 px-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -89,13 +99,15 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-zinc-300">Email</FormLabel>
+                    <FormLabel className="text-zinc-200 font-medium ml-1">
+                      Email Address
+                    </FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
+                      <div className="relative group">
+                        <Mail className="absolute left-3 top-3.5 h-4 w-4 text-zinc-400 group-focus-within:text-white transition-colors" />
                         <Input
                           placeholder="name@example.com"
-                          className="pl-10 bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-11"
+                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:border-white/20 h-12 transition-all duration-300"
                           {...field}
                         />
                       </div>
@@ -109,14 +121,16 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-zinc-300">Password</FormLabel>
+                    <FormLabel className="text-zinc-200 font-medium ml-1">
+                      Password
+                    </FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-zinc-500" />
+                      <div className="relative group">
+                        <Lock className="absolute left-3 top-3.5 h-4 w-4 text-zinc-400 group-focus-within:text-white transition-colors" />
                         <Input
                           type="password"
                           placeholder="••••••"
-                          className="pl-10 bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 h-11"
+                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:border-white/20 h-12 transition-all duration-300"
                           {...field}
                         />
                       </div>
@@ -126,7 +140,7 @@ export default function LoginPage() {
                 )}
               />
               <Button
-                className="w-full bg-white hover:bg-zinc-200 text-black font-bold h-11 mt-2 transition-all"
+                className="w-full bg-white hover:bg-zinc-100 text-black font-bold h-12 mt-4 transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] hover:scale-[1.02]"
                 type="submit"
                 disabled={isLoading}
               >
