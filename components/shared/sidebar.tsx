@@ -67,16 +67,16 @@ const routes = [
     color: "text-green-600",
   },
   {
-    label: "My Profile",
-    icon: Settings,
-    href: "/profile",
-    color: "text-gray-500",
-  },
-  {
     label: "Company Profile",
     icon: Building2, // Using slightly different icon if available, or stay with Building
     href: "/company",
     color: "text-blue-600",
+  },
+  {
+    label: "My Profile",
+    icon: Settings,
+    href: "/profile",
+    color: "text-gray-500",
   },
 ];
 
