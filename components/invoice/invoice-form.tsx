@@ -101,32 +101,32 @@ export default function InvoiceForm() {
             <h3 className="text-lg font-medium mb-4">Customer Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Customer Name</Label>
+                <Label className="pb-2">Customer Name</Label>
                 <Input
                   {...register("customerName", { required: true })}
                   placeholder="Client / Company Name"
                 />
               </div>
               <div>
-                <Label>GSTIN (Optional)</Label>
+                <Label className="pb-2">GSTIN (Optional)</Label>
                 <Input
                   {...register("customerGstin")}
                   placeholder="e.g. 29ABC..."
                 />
               </div>
               <div className="md:col-span-2">
-                <Label>Billing Address</Label>
+                <Label className="pb-2">Billing Address</Label>
                 <Input
                   {...register("customerAddress", { required: true })}
                   placeholder="Full billing address"
                 />
               </div>
               <div>
-                <Label>Place of Supply</Label>
+                <Label className="pb-2">Place of Supply</Label>
                 <Input {...register("placeOfSupply")} placeholder="State" />
               </div>
               <div>
-                <Label>Due Date</Label>
+                <Label className="pb-2">Due Date</Label>
                 <Input type="date" {...register("dueDate")} />
               </div>
             </div>
@@ -188,7 +188,7 @@ export default function InvoiceForm() {
                       </td>
                       <td className="p-3 text-right">
                         {/* Amount is read-only calculated */}
-                        <div className="py-2 px-3 bg-slate-50 dark:bg-slate-950 border rounded font-mono text-right">
+                        <div className="py-2 px-3 bg-slate-50 dark:bg-slate-950 border rounded text-right">
                           {watch(`items.${index}.amount`).toLocaleString(
                             "en-IN"
                           )}
