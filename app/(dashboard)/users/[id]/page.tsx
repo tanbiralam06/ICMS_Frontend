@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, User2, Calendar, Clock, CheckSquare } from "lucide-react";
+import { format } from "date-fns";
 
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -387,7 +388,6 @@ export default function EmployeeDetailsPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Title</TableHead>
-                      <TableHead>Project</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Due Date</TableHead>
                       <TableHead>Status</TableHead>
@@ -400,7 +400,6 @@ export default function EmployeeDetailsPage() {
                         <TableCell className="font-medium max-w-xs truncate">
                           {task.title}
                         </TableCell>
-                        <TableCell>{task.projectId?.name || "N/A"}</TableCell>
                         <TableCell>
                           <Badge
                             variant={
@@ -417,7 +416,7 @@ export default function EmployeeDetailsPage() {
                         </TableCell>
                         <TableCell>
                           {task.dueDate
-                            ? new Date(task.dueDate).toLocaleDateString()
+                            ? format(new Date(task.dueDate), "dd-MM-yyyy")
                             : "N/A"}
                         </TableCell>
                         <TableCell>
