@@ -12,9 +12,17 @@ import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { DeleteTaskDialog } from "@/components/tasks/DeleteTaskDialog";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { TaskFormDialog } from "@/components/tasks/TaskFormDialog";
-import { DeleteTaskDialog } from "@/components/tasks/DeleteTaskDialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const taskSchema = z.object({
   title: z.string().min(3, "Title is required"),
@@ -37,16 +45,58 @@ export default function TasksPage() {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [filterBy, setFilterBy] = useState<string>("all"); // "all" or "my_tasks"
+
+  // User state
   const [userSearch, setUserSearch] = useState("");
+  const [role, setRole] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const queryClient = useQueryClient();
 
+  // Get current user ID
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setRole(user.roles ? user.roles[0] : null);
+        setCurrentUser(user);
+      } catch (e) {
+        console.error("Failed to parse user from local storage", e);
+      }
+    }
+  }, []);
+
   const { data: tasks } = useQuery({
-    queryKey: ["tasks"],
+    queryKey: [
+      "tasks",
+      statusFilter,
+      priorityFilter,
+      filterBy,
+      currentUser?.id,
+    ],
     queryFn: async () => {
-      const res = await api.get("/tasks");
+      const params = new URLSearchParams();
+      if (statusFilter && statusFilter !== "all")
+        params.append("status", statusFilter);
+      if (priorityFilter && priorityFilter !== "all")
+        params.append("priority", priorityFilter);
+
+      if (filterBy === "my_tasks" && currentUser?.id) {
+        params.append("createdBy", currentUser.id);
+      } else if (filterBy === "assigned_to_me" && currentUser?.id) {
+        params.append("assignedTo", currentUser.id);
+      }
+
+      const res = await api.get(`/tasks?${params.toString()}`);
       return res.data;
     },
+    enabled: !!currentUser || filterBy === "all",
   });
 
   const { data: users } = useQuery({
@@ -179,22 +229,6 @@ export default function TasksPage() {
     setIsOpen(true);
   };
 
-  const [role, setRole] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setRole(user.roles ? user.roles[0] : null);
-        setCurrentUser(user);
-      } catch (e) {
-        console.error("Failed to parse user from local storage", e);
-      }
-    }
-  }, []);
-
   const filteredUsers = users?.data?.users?.filter(
     (user: any) =>
       user.fullName.toLowerCase().includes(userSearch.toLowerCase()) ||
@@ -230,6 +264,48 @@ export default function TasksPage() {
             filteredUsers={filteredUsers}
           />
         </Dialog>
+      </div>
+
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <Tabs
+          defaultValue="all"
+          value={filterBy}
+          onValueChange={setFilterBy}
+          className="w-[600px]"
+        >
+          <TabsList>
+            <TabsTrigger value="all">All Tasks</TabsTrigger>
+            <TabsTrigger value="assigned_to_me">Assigned to Me</TabsTrigger>
+            <TabsTrigger value="my_tasks">Created By Me</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="flex items-center gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Filter by Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="Todo">Todo</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Done">Done</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Filter by Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priorities</SelectItem>
+              <SelectItem value="Low">Low</SelectItem>
+              <SelectItem value="Medium">Medium</SelectItem>
+              <SelectItem value="High">High</SelectItem>
+              <SelectItem value="Critical">Critical</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
