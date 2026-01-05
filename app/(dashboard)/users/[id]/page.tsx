@@ -332,7 +332,7 @@ export default function EmployeeDetailsPage() {
                     {attendance.map((record: any) => (
                       <TableRow key={record._id}>
                         <TableCell>
-                          {new Date(record.date).toLocaleDateString()}
+                          {format(new Date(record.date), "dd-MM-yyyy")}
                         </TableCell>
                         <TableCell>
                           {record.punchIn
