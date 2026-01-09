@@ -143,14 +143,52 @@ export default function AttendancePage() {
 
   const punchMutation = useMutation({
     mutationFn: async () => {
-      return await api.post("/attendance/punch");
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error("Geolocation is not supported by your browser"));
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const { latitude, longitude } = position.coords;
+              const res = await api.post("/attendance/punch", {
+                latitude,
+                longitude,
+              });
+              resolve(res);
+            } catch (error) {
+              reject(error);
+            }
+          },
+          (error) => {
+            let errorMessage = "Failed to get location";
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                errorMessage =
+                  "Location permission denied. Please allow location access to mark attendance.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMessage = "Location information is unavailable.";
+                break;
+              case error.TIMEOUT:
+                errorMessage = "The request to get user location timed out.";
+                break;
+            }
+            reject(new Error(errorMessage));
+          }
+        );
+      });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
       toast.success(data.data.message);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || "Failed to punch");
+      const message =
+        error.response?.data?.message || error.message || "Failed to punch";
+      toast.error(message);
     },
   });
 
