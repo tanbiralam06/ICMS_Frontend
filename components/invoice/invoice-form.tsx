@@ -144,24 +144,24 @@ export default function InvoiceForm() {
     <Card className="w-full max-w-5xl mx-auto">
       <CardContent className="p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-          {/* Invoice Type Selection */}
-          <div className="flex justify-end">
-            <div className="w-48">
-              <Label className="pb-2">Invoice Type</Label>
-              <select
-                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                {...register("type")}
-              >
-                <option value="TAX_INVOICE">Tax Invoice</option>
-                <option value="PROFORMA">Proforma Invoice</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Customer Details */}
+          {/* Invoice Details */}
           <div>
-            <h3 className="text-lg font-medium mb-4">Customer Details</h3>
+            <h3 className="text-lg font-medium mb-4">Invoice Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="pb-2">Invoice Type</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  {...register("type")}
+                >
+                  <option value="TAX_INVOICE">Tax Invoice</option>
+                  <option value="PROFORMA">Proforma Invoice</option>
+                </select>
+              </div>
+              <div>
+                <Label className="pb-2">Due Date</Label>
+                <Input type="date" {...register("dueDate")} />
+              </div>
               <div>
                 <Label className="pb-2">Customer Name</Label>
                 <Input
@@ -186,10 +186,6 @@ export default function InvoiceForm() {
               <div>
                 <Label className="pb-2">Place of Supply</Label>
                 <Input {...register("placeOfSupply")} placeholder="State" />
-              </div>
-              <div>
-                <Label className="pb-2">Due Date</Label>
-                <Input type="date" {...register("dueDate")} />
               </div>
             </div>
           </div>
