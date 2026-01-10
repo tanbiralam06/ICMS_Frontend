@@ -182,10 +182,11 @@ export default function InvoiceViewPage() {
             <thead>
               <tr className="border-b-2 border-neutral-900 text-neutral-900">
                 <th className="py-2 text-left w-[5%]">#</th>
-                <th className="py-2 text-left w-[45%]">Item Description</th>
+                <th className="py-2 text-left w-[35%]">Item Description</th>
                 <th className="py-2 text-left w-[15%]">HSN/SAC</th>
                 <th className="py-2 text-center w-[10%]">Qty</th>
                 <th className="py-2 text-right w-[10%]">Rate</th>
+                <th className="py-2 text-right w-[15%]">Discount</th>
                 <th className="py-2 text-right w-[15%]">Amount</th>
               </tr>
             </thead>
@@ -209,6 +210,17 @@ export default function InvoiceViewPage() {
                   <td className="py-3 text-center">{item.quantity}</td>
                   <td className="py-3 text-right">
                     {item.rate.toLocaleString("en-IN")}
+                  </td>
+                  <td className="py-3 text-right text-neutral-500 text-[10px]">
+                    {item.discountAmount > 0 ? (
+                      <>
+                        {item.discountType === "PERCENTAGE" &&
+                          `(${item.discountValue}%) `}
+                        -₹{item.discountAmount.toLocaleString("en-IN")}
+                      </>
+                    ) : (
+                      "-"
+                    )}
                   </td>
                   <td className="py-3 text-right font-medium text-neutral-900">
                     {item.amount.toLocaleString("en-IN")}
@@ -274,6 +286,23 @@ export default function InvoiceViewPage() {
                   })}
                 </div>
               </div>
+
+              {invoice.discountAmount > 0 && (
+                <div className="flex justify-between text-red-600">
+                  <span>
+                    Discount{" "}
+                    {invoice.discountType === "PERCENTAGE" &&
+                      `(${invoice.discountValue}%)`}
+                  </span>
+                  <div>
+                    - ₹{" "}
+                    {invoice.discountAmount.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between text-neutral-600">
                 <span>Tax Amount</span>
                 <div>

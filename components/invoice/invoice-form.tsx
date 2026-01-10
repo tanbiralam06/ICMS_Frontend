@@ -36,7 +36,17 @@ export default function InvoiceForm() {
     formState: { errors },
   } = useForm<InvoiceData>({
     defaultValues: {
-      items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
+      items: [
+        {
+          description: "",
+          quantity: 1,
+          rate: 0,
+          discountType: "FLAT",
+          discountValue: 0,
+          discountAmount: 0,
+          amount: 0,
+        },
+      ],
       taxRate: 18, // Default GST
       subTotal: 0,
       taxAmount: 0,
@@ -52,6 +62,8 @@ export default function InvoiceForm() {
   // Watch items and tax rate for live calculations
   const items = useWatch({ control, name: "items" });
   const taxRate = useWatch({ control, name: "taxRate" });
+  const discountType = useWatch({ control, name: "discountType" });
+  const discountValue = useWatch({ control, name: "discountValue" });
 
   // Effect to update totals whenever items or tax changes
   useEffect(() => {
@@ -61,22 +73,57 @@ export default function InvoiceForm() {
     items.forEach((item, index) => {
       const qty = Number(item.quantity) || 0;
       const rate = Number(item.rate) || 0;
-      const amount = qty * rate;
+      const baseAmount = qty * rate;
+
+      // Calculate Item Discount
+      let itemDiscountAmount = 0;
+      const dValue = Number(item.discountValue) || 0;
+      if (item.discountType === "PERCENTAGE") {
+        itemDiscountAmount = (baseAmount * dValue) / 100;
+      } else {
+        itemDiscountAmount = dValue;
+      }
+      // Cap discount at base amount
+      if (itemDiscountAmount > baseAmount) {
+        itemDiscountAmount = baseAmount;
+      }
+
+      const netAmount = baseAmount - itemDiscountAmount;
 
       // Only update if value changed to avoid infinite loop
-      if (item.amount !== amount) {
-        setValue(`items.${index}.amount`, amount);
+      if (
+        item.amount !== netAmount ||
+        item.discountAmount !== itemDiscountAmount
+      ) {
+        setValue(`items.${index}.amount`, netAmount);
+        setValue(`items.${index}.discountAmount`, itemDiscountAmount);
       }
-      newSubTotal += amount;
+      newSubTotal += netAmount;
     });
 
-    const newTaxAmount = (newSubTotal * Number(taxRate)) / 100;
-    const newTotalAmount = newSubTotal + newTaxAmount;
+    // Calculate Discount
+    let newDiscountAmount = 0;
+    const dValue = Number(discountValue) || 0;
+    if (discountType === "PERCENTAGE") {
+      newDiscountAmount = (newSubTotal * dValue) / 100;
+    } else {
+      newDiscountAmount = dValue;
+    }
+
+    // Ensure discount doesn't exceed subtotal
+    if (newDiscountAmount > newSubTotal) {
+      newDiscountAmount = newSubTotal;
+    }
+
+    const taxableValue = newSubTotal - newDiscountAmount;
+    const newTaxAmount = (taxableValue * Number(taxRate)) / 100;
+    const newTotalAmount = taxableValue + newTaxAmount;
 
     setValue("subTotal", newSubTotal);
+    setValue("discountAmount", newDiscountAmount);
     setValue("taxAmount", newTaxAmount);
     setValue("totalAmount", newTotalAmount);
-  }, [items, taxRate, setValue]);
+  }, [items, taxRate, discountType, discountValue, setValue]);
 
   const onSubmit = async (data: InvoiceData) => {
     setLoading(true);
@@ -141,10 +188,11 @@ export default function InvoiceForm() {
               <table className="w-full text-sm text-left">
                 <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-medium">
                   <tr>
-                    <th className="p-3 w-[40%]">Description</th>
+                    <th className="p-3 w-[30%]">Description</th>
                     <th className="p-3 w-[15%]">HSN/SAC</th>
                     <th className="p-3 w-[10%]">Qty</th>
                     <th className="p-3 w-[15%]">Rate</th>
+                    <th className="p-3 w-[20%]">Discount</th>
                     <th className="p-3 w-[15%] text-right">Amount</th>
                     <th className="p-3 w-[5%]"></th>
                   </tr>
@@ -186,6 +234,28 @@ export default function InvoiceForm() {
                           })}
                         />
                       </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <select
+                            className="w-12 h-9 rounded-md border border-input bg-background px-1 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            {...register(
+                              `items.${index}.discountType` as const
+                            )}
+                          >
+                            <option value="FLAT">₹</option>
+                            <option value="PERCENTAGE">%</option>
+                          </select>
+                          <Input
+                            type="number"
+                            min="0"
+                            className="w-20"
+                            {...register(
+                              `items.${index}.discountValue` as const,
+                              { valueAsNumber: true }
+                            )}
+                          />
+                        </div>
+                      </td>
                       <td className="p-3 text-right">
                         {/* Amount is read-only calculated */}
                         <div className="py-2 px-3 bg-slate-50 dark:bg-slate-950 border rounded text-right">
@@ -216,7 +286,15 @@ export default function InvoiceForm() {
               type="button"
               variant="outline"
               onClick={() =>
-                append({ description: "", quantity: 1, rate: 0, amount: 0 })
+                append({
+                  description: "",
+                  quantity: 1,
+                  rate: 0,
+                  discountType: "FLAT",
+                  discountValue: 0,
+                  discountAmount: 0,
+                  amount: 0,
+                })
               }
               className="mt-4"
             >
@@ -229,7 +307,7 @@ export default function InvoiceForm() {
 
           {/* Summary */}
           <div className="flex justify-end">
-            <div className="w-full md:w-1/3 space-y-3">
+            <div className="w-full md:w-1/2 space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-500">Sub Total</span>
                 <span className="font-medium">
@@ -239,6 +317,7 @@ export default function InvoiceForm() {
                   })}
                 </span>
               </div>
+
               <div className="flex justify-between items-center text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-slate-500">Tax Rate (%)</span>

@@ -5,6 +5,9 @@ export interface InvoiceItem {
   hsnCode?: string;
   quantity: number;
   rate: number;
+  discountType: "FLAT" | "PERCENTAGE";
+  discountValue: number;
+  discountAmount: number;
   amount: number;
 }
 
@@ -15,6 +18,9 @@ export interface InvoiceData {
   placeOfSupply?: string;
   items: InvoiceItem[];
   subTotal: number;
+  discountType: "FLAT" | "PERCENTAGE";
+  discountValue: number;
+  discountAmount: number;
   taxRate: number;
   taxAmount: number;
   totalAmount: number;
