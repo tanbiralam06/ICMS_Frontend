@@ -80,18 +80,18 @@ export default function InvoiceViewPage() {
       {/* Invoice Container - A4 Size Fixed */}
       <div className="w-full max-w-[210mm] bg-white shadow-2xl print:shadow-none p-12 min-h-[297mm] print:min-h-0 relative">
         {/* 1. Header Section */}
-        <div className="flex justify-between items-start border-b border-neutral-200 pb-8 mb-8">
+        <div className="flex justify-between items-start border-b border-neutral-200 pb-6 mb-6">
           <div className="w-1/2">
             {company.logoUrl && (
               <img
                 src={getImageUrl(company.logoUrl) || ""}
                 alt="Company Logo"
-                className="h-24 w-auto object-contain mb-4"
+                className="h-20 w-auto object-contain mb-3"
               />
             )}
             {/* Company Address Below Logo */}
-            <div className="text-sm text-neutral-600 space-y-1">
-              <h2 className="font-bold text-lg text-neutral-900">
+            <div className="text-xs text-neutral-600 space-y-1">
+              <h2 className="font-bold text-base text-neutral-900">
                 {company.companyName}
               </h2>
               <p className="whitespace-pre-wrap leading-relaxed">
@@ -109,14 +109,14 @@ export default function InvoiceViewPage() {
           </div>
 
           <div className="w-1/2 text-right">
-            <h1 className="text-4xl font-light tracking-wide text-neutral-900 mb-2">
+            <h1 className="text-3xl font-light tracking-wide text-neutral-900 mb-2">
               TAX INVOICE
             </h1>
-            <p className="text-neutral-500 text-sm mb-6">
+            <p className="text-neutral-500 text-xs mb-6">
               Original for Recipient
             </p>
 
-            <div className="space-y-2 text-sm">
+            <div className="space-y-1.5 text-xs">
               <div className="flex justify-end gap-x-4">
                 <span className="text-neutral-500 w-24">Invoice No:</span>
                 <span className="font-bold text-neutral-900">
@@ -142,16 +142,16 @@ export default function InvoiceViewPage() {
         </div>
 
         {/* 2. Client Details Section */}
-        <div className="flex justify-between items-start mb-12">
+        <div className="flex justify-between items-start mb-8">
           <div className="w-1/2 pr-8">
-            <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-400 mb-2">
+            <h3 className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 mb-2">
               Billed To
             </h3>
-            <div className="text-sm text-neutral-800 space-y-1">
-              <h4 className="font-bold text-lg">{invoice.customerName}</h4>
+            <div className="text-xs text-neutral-800 space-y-1">
+              <h4 className="font-bold text-base">{invoice.customerName}</h4>
               <p className="whitespace-pre-wrap">{invoice.customerAddress}</p>
               {invoice.customerGstin && (
-                <p className="mt-2">
+                <p className="mt-1.5">
                   <span className="font-medium text-neutral-600">GSTIN:</span>{" "}
                   {invoice.customerGstin}
                 </p>
@@ -159,14 +159,14 @@ export default function InvoiceViewPage() {
             </div>
           </div>
           <div className="w-1/2 pl-8 border-l border-neutral-200">
-            <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-400 mb-2">
+            <h3 className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 mb-2">
               Shipped To
             </h3>
-            <div className="text-sm text-neutral-800 space-y-1">
+            <div className="text-xs text-neutral-800 space-y-1">
               {/* Assuming same as Addressed for now, can be different in model */}
-              <h4 className="font-bold text-lg">{invoice.customerName}</h4>
+              <h4 className="font-bold text-base">{invoice.customerName}</h4>
               <p className="whitespace-pre-wrap">{invoice.customerAddress}</p>
-              <p className="mt-2">
+              <p className="mt-1.5">
                 <span className="font-medium text-neutral-600">
                   Place of Supply:
                 </span>{" "}
@@ -177,16 +177,16 @@ export default function InvoiceViewPage() {
         </div>
 
         {/* 3. Items Table */}
-        <div className="mb-4">
-          <table className="w-full text-sm border-collapse">
+        <div className="mb-8">
+          <table className="w-full text-xs border-collapse">
             <thead>
               <tr className="border-b-2 border-neutral-900 text-neutral-900">
-                <th className="py-3 text-left w-[5%]">#</th>
-                <th className="py-3 text-left w-[45%]">Item Description</th>
-                <th className="py-3 text-left w-[15%]">HSN/SAC</th>
-                <th className="py-3 text-center w-[10%]">Qty</th>
-                <th className="py-3 text-right w-[10%]">Rate</th>
-                <th className="py-3 text-right w-[15%]">Amount</th>
+                <th className="py-2 text-left w-[5%]">#</th>
+                <th className="py-2 text-left w-[45%]">Item Description</th>
+                <th className="py-2 text-left w-[15%]">HSN/SAC</th>
+                <th className="py-2 text-center w-[10%]">Qty</th>
+                <th className="py-2 text-right w-[10%]">Rate</th>
+                <th className="py-2 text-right w-[15%]">Amount</th>
               </tr>
             </thead>
             <tbody className="text-neutral-700">
@@ -195,22 +195,22 @@ export default function InvoiceViewPage() {
                   key={index}
                   className="border-b border-neutral-100 last:border-0"
                 >
-                  <td className="py-4 font-medium text-neutral-400">
+                  <td className="py-3 font-medium text-neutral-400">
                     {index + 1}
                   </td>
-                  <td className="py-4">
+                  <td className="py-3">
                     <p className="font-medium text-neutral-900">
                       {item.description}
                     </p>
                   </td>
-                  <td className="py-4 text-neutral-500">
+                  <td className="py-3 text-neutral-500">
                     {item.hsnCode || "-"}
                   </td>
-                  <td className="py-4 text-center">{item.quantity}</td>
-                  <td className="py-4 text-right">
+                  <td className="py-3 text-center">{item.quantity}</td>
+                  <td className="py-3 text-right">
                     {item.rate.toLocaleString("en-IN")}
                   </td>
-                  <td className="py-4 text-right font-medium text-neutral-900">
+                  <td className="py-3 text-right font-medium text-neutral-900">
                     {item.amount.toLocaleString("en-IN")}
                   </td>
                 </tr>
@@ -224,19 +224,19 @@ export default function InvoiceViewPage() {
           {/* Left: Amount in Words & Bank */}
           <div className="w-1/2 pr-8 space-y-8">
             <div>
-              <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-400 mb-1">
+              <h3 className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 mb-1">
                 Total in Words
               </h3>
-              <p className="text-sm font-medium italic text-neutral-800 capitalize">
+              <p className="text-xs font-medium italic text-neutral-800 capitalize">
                 {numberToWords(Math.round(invoice.totalAmount))} Rupees Only
               </p>
             </div>
 
             <div>
-              <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-400 mb-2">
+              <h3 className="text-[10px] uppercase tracking-widest font-bold text-neutral-400 mb-2">
                 Bank Details
               </h3>
-              <div className="text-sm text-neutral-700 grid grid-cols-[100px_1fr] gap-y-1">
+              <div className="text-xs text-neutral-700 grid grid-cols-[80px_1fr] gap-y-1">
                 <span className="text-neutral-500">Bank Name:</span>
                 <span className="font-medium">{company.bankName}</span>
 
@@ -264,7 +264,7 @@ export default function InvoiceViewPage() {
 
           {/* Right: Totals & Signature */}
           <div className="w-1/3">
-            <div className="space-y-3 mb-10 text-sm">
+            <div className="space-y-2 mb-8 text-xs">
               <div className="flex justify-between text-neutral-600">
                 <span>Sub Total</span>
                 <div>
@@ -283,7 +283,7 @@ export default function InvoiceViewPage() {
                   })}
                 </div>
               </div>
-              <div className="flex justify-between items-center text-lg font-bold text-neutral-900 pt-3 border-t border-neutral-200">
+              <div className="flex justify-between items-center text-base font-bold text-neutral-900 pt-3 border-t border-neutral-200">
                 <span>Total</span>
                 <div>
                   ₹{" "}
@@ -299,13 +299,13 @@ export default function InvoiceViewPage() {
                 <img
                   src={getImageUrl(company.signatureUrl) || ""}
                   alt="Signature"
-                  className="h-16 w-auto object-contain ml-auto mb-2"
+                  className="h-12 w-auto object-contain ml-auto mb-2"
                 />
               )}
-              <h4 className="font-bold text-sm text-neutral-900">
+              <h4 className="font-bold text-xs text-neutral-900">
                 {company.signatoryName}
               </h4>
-              <p className="text-xs text-neutral-500 mt-1">
+              <p className="text-[10px] text-neutral-500 mt-1">
                 Authorized Signatory
               </p>
             </div>
