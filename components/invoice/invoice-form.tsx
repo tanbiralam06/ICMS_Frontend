@@ -195,8 +195,8 @@ export default function InvoiceForm() {
           {/* Items */}
           <div>
             <h3 className="text-lg font-medium mb-4">Items & Description</h3>
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full text-sm text-left">
+            <div className="border rounded-lg overflow-x-auto">
+              <table className="w-full min-w-[800px] text-sm text-left">
                 <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 font-medium">
                   <tr>
                     <th className="p-3 w-[30%]">Description</th>
