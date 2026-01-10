@@ -52,15 +52,20 @@ export default function InvoiceViewPage() {
   };
 
   return (
-    <div className="bg-neutral-100 min-h-screen p-8 print:p-0 print:bg-white flex flex-col items-center font-sans text-neutral-900">
+    <div className="bg-neutral-100 min-h-screen p-8 print:p-0 print:bg-white print:block print:h-auto print:overflow-hidden print:w-full flex flex-col items-center font-sans text-neutral-900">
       <style jsx global>{`
         @media print {
           @page {
+            size: A4;
             margin: 0;
           }
+          html,
           body {
-            margin: 0;
-            padding: 0;
+            width: 210mm;
+            height: 297mm;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden;
           }
         }
       `}</style>
@@ -78,7 +83,7 @@ export default function InvoiceViewPage() {
       </div>
 
       {/* Invoice Container - A4 Size Fixed */}
-      <div className="w-full max-w-[210mm] bg-white shadow-2xl print:shadow-none p-12 min-h-[297mm] print:min-h-0 relative">
+      <div className="w-full max-w-[210mm] bg-white shadow-2xl print:shadow-none p-12 print:p-10 min-h-[297mm] print:min-h-0 print:h-auto relative print:static">
         {/* 1. Header Section */}
         <div className="flex justify-between items-start border-b border-neutral-200 pb-6 mb-6">
           <div className="w-1/2">
