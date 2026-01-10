@@ -109,16 +109,20 @@ export default function InvoiceViewPage() {
           </div>
 
           <div className="w-1/2 text-right">
-            <h1 className="text-3xl font-light tracking-wide text-neutral-900 mb-2">
-              TAX INVOICE
+            <h1 className="text-3xl font-light tracking-wide text-neutral-900 mb-2 uppercase">
+              {invoice.type === "PROFORMA" ? "Proforma Invoice" : "Tax Invoice"}
             </h1>
             <p className="text-neutral-500 text-xs mb-6">
-              Original for Recipient
+              {invoice.type === "PROFORMA"
+                ? "This is not a demand for payment"
+                : "Original for Recipient"}
             </p>
 
             <div className="space-y-1.5 text-xs">
               <div className="flex justify-end gap-x-4">
-                <span className="text-neutral-500 w-24">Invoice No:</span>
+                <span className="text-neutral-500 w-24">
+                  {invoice.type === "PROFORMA" ? "Proforma No:" : "Invoice No:"}
+                </span>
                 <span className="font-bold text-neutral-900">
                   {invoice.invoiceNo}
                 </span>

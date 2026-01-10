@@ -36,6 +36,7 @@ export default function InvoiceForm() {
     formState: { errors },
   } = useForm<InvoiceData>({
     defaultValues: {
+      type: "TAX_INVOICE",
       items: [
         {
           description: "",
@@ -143,6 +144,20 @@ export default function InvoiceForm() {
     <Card className="w-full max-w-5xl mx-auto">
       <CardContent className="p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Invoice Type Selection */}
+          <div className="flex justify-end">
+            <div className="w-48">
+              <Label className="pb-2">Invoice Type</Label>
+              <select
+                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                {...register("type")}
+              >
+                <option value="TAX_INVOICE">Tax Invoice</option>
+                <option value="PROFORMA">Proforma Invoice</option>
+              </select>
+            </div>
+          </div>
+
           {/* Customer Details */}
           <div>
             <h3 className="text-lg font-medium mb-4">Customer Details</h3>

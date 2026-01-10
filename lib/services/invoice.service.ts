@@ -25,6 +25,7 @@ export interface InvoiceData {
   taxAmount: number;
   totalAmount: number;
   dueDate?: Date;
+  type?: "TAX_INVOICE" | "PROFORMA";
 }
 
 export const InvoiceService = {
