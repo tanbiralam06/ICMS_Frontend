@@ -236,41 +236,28 @@ export default function InvoiceViewPage() {
               <h3 className="text-xs uppercase tracking-widest font-bold text-neutral-400 mb-2">
                 Bank Details
               </h3>
-              <div className="text-sm space-y-1 text-neutral-700">
-                <div className="flex">
-                  <span className="w-24 text-neutral-500">Bank Name:</span>{" "}
-                  <span className="font-medium">{company.bankName}</span>
-                </div>
-                <div className="flex">
-                  <span className="w-24 text-neutral-500">Acc. Name:</span>{" "}
-                  <span className="font-medium">
-                    {company.accountHolderName}
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="w-24 text-neutral-500">A/C No:</span>{" "}
-                  <span className="font-mono font-medium">
-                    {company.accountNumber}
-                  </span>
-                </div>
-                <div className="flex">
-                  <span className="w-24 text-neutral-500">IFSC Code:</span>{" "}
-                  <span className="font-mono font-medium">
-                    {company.ifscCode}
-                  </span>
-                </div>
+              <div className="text-sm text-neutral-700 grid grid-cols-[100px_1fr] gap-y-1">
+                <span className="text-neutral-500">Bank Name:</span>
+                <span className="font-medium">{company.bankName}</span>
+
+                <span className="text-neutral-500">Acc. Name:</span>
+                <span className="font-medium">{company.accountHolderName}</span>
+
+                <span className="text-neutral-500">A/C No:</span>
+                <span className="font-medium">{company.accountNumber}</span>
+
+                <span className="text-neutral-500">IFSC Code:</span>
+                <span className="font-medium">{company.ifscCode}</span>
+
                 {company.swiftCode && (
-                  <div className="flex">
-                    <span className="w-24 text-neutral-500">SWIFT:</span>{" "}
-                    <span className="font-mono font-medium">
-                      {company.swiftCode}
-                    </span>
-                  </div>
+                  <>
+                    <span className="text-neutral-500">SWIFT:</span>
+                    <span className="font-medium">{company.swiftCode}</span>
+                  </>
                 )}
-                <div className="flex">
-                  <span className="w-24 text-neutral-500">Branch:</span>{" "}
-                  <span className="font-medium">{company.branch}</span>
-                </div>
+
+                <span className="text-neutral-500">Branch:</span>
+                <span className="font-medium">{company.branch}</span>
               </div>
             </div>
           </div>
