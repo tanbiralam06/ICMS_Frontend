@@ -11,6 +11,8 @@ import {
   XCircle,
   Plus,
   Trash2,
+  Smartphone,
+  Monitor,
 } from "lucide-react";
 
 import api from "@/lib/api";
@@ -82,7 +84,7 @@ export default function AttendancePage() {
       const res = await api.get(
         `/attendance/me/monthly?month=${
           date.getMonth() + 1
-        }&year=${date.getFullYear()}`
+        }&year=${date.getFullYear()}`,
       );
       return res.data;
     },
@@ -177,7 +179,7 @@ export default function AttendancePage() {
                 break;
             }
             reject(new Error(errorMessage));
-          }
+          },
         );
       });
     },
@@ -240,7 +242,7 @@ export default function AttendancePage() {
                       "w-40 h-40 rounded-full text-xl font-bold shadow-lg transition-all hover:scale-105",
                       isPunchedIn
                         ? "bg-red-500 hover:bg-red-600"
-                        : "bg-green-500 hover:bg-green-600"
+                        : "bg-green-500 hover:bg-green-600",
                     )}
                     onClick={() => punchMutation.mutate()}
                     disabled={punchMutation.isPending}
@@ -248,8 +250,8 @@ export default function AttendancePage() {
                     {punchMutation.isPending
                       ? "Processing..."
                       : isPunchedIn
-                      ? "Punch Out"
-                      : "Punch In"}
+                        ? "Punch Out"
+                        : "Punch In"}
                   </Button>
                 )}
 
@@ -263,7 +265,7 @@ export default function AttendancePage() {
                         {todayAttendance.data.punchIn
                           ? format(
                               new Date(todayAttendance.data.punchIn),
-                              "hh:mm a"
+                              "hh:mm a",
                             )
                           : "--:--"}
                       </div>
@@ -276,7 +278,7 @@ export default function AttendancePage() {
                         {todayAttendance.data.punchOut
                           ? format(
                               new Date(todayAttendance.data.punchOut),
-                              "hh:mm a"
+                              "hh:mm a",
                             )
                           : "--:--"}
                       </div>
@@ -299,7 +301,7 @@ export default function AttendancePage() {
                         variant={"outline"}
                         className={cn(
                           "w-[240px] justify-start text-left font-normal",
-                          !date && "text-muted-foreground"
+                          !date && "text-muted-foreground",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -339,8 +341,8 @@ export default function AttendancePage() {
                               record.status === "Present"
                                 ? "bg-green-500"
                                 : record.status === "Half-day"
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500",
                             )}
                           />
                           <div>
@@ -401,7 +403,7 @@ export default function AttendancePage() {
                           variant={"outline"}
                           className={cn(
                             "w-[240px] justify-start text-left font-normal",
-                            !newHolidayRange && "text-muted-foreground"
+                            !newHolidayRange && "text-muted-foreground",
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -409,13 +411,13 @@ export default function AttendancePage() {
                             newHolidayRange.to ? (
                               isSameDay(
                                 newHolidayRange.from,
-                                newHolidayRange.to
+                                newHolidayRange.to,
                               ) ? (
                                 format(newHolidayRange.from, "PPP")
                               ) : (
                                 `${format(
                                   newHolidayRange.from,
-                                  "LLL dd"
+                                  "LLL dd",
                                 )} - ${format(newHolidayRange.to, "LLL dd, y")}`
                               )
                             ) : (
@@ -486,7 +488,7 @@ export default function AttendancePage() {
                                 ? format(holidayStartDate, "dd")
                                 : `${format(holidayStartDate, "dd")}-${format(
                                     holidayEndDate,
-                                    "dd"
+                                    "dd",
                                   )}`}
                             </span>
                           </div>
@@ -497,7 +499,7 @@ export default function AttendancePage() {
                                 ? format(holidayStartDate, "EEEE")
                                 : `${format(
                                     holidayStartDate,
-                                    "EEE"
+                                    "EEE",
                                   )} to ${format(holidayEndDate, "EEE")}`}
                             </span>
                           </div>
@@ -540,7 +542,7 @@ export default function AttendancePage() {
                         variant={"outline"}
                         className={cn(
                           "w-[240px] justify-start text-left font-normal",
-                          !adminDate && "text-muted-foreground"
+                          !adminDate && "text-muted-foreground",
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -569,14 +571,16 @@ export default function AttendancePage() {
                       <TableHead>Employee</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Punch In</TableHead>
+                      <TableHead>Device</TableHead>
                       <TableHead>Punch Out</TableHead>
+                      <TableHead>Device</TableHead>
                       <TableHead>Total Hours</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {dailyAttendance?.data?.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
+                        <TableCell colSpan={7} className="h-24 text-center">
                           No records found.
                         </TableCell>
                       </TableRow>
@@ -607,25 +611,25 @@ export default function AttendancePage() {
                                 record.status === "Present"
                                   ? "default"
                                   : record.status === "Absent"
-                                  ? "destructive"
-                                  : "outline"
+                                    ? "destructive"
+                                    : "outline"
                               }
                               className={
                                 record.status === "Present"
                                   ? "bg-green-500 hover:bg-green-600 border-transparent text-white"
                                   : record.status === "Half-day"
-                                  ? "bg-yellow-500 hover:bg-yellow-600 border-transparent text-white"
-                                  : record.status === "Absent"
-                                  ? "bg-red-500 hover:bg-red-600 border-transparent text-white"
-                                  : ""
+                                    ? "bg-yellow-500 hover:bg-yellow-600 border-transparent text-white"
+                                    : record.status === "Absent"
+                                      ? "bg-red-500 hover:bg-red-600 border-transparent text-white"
+                                      : ""
                               }
                             >
                               {record.status === "On Leave" && record.leaveType
                                 ? `${record.status} (${record.leaveType})`
                                 : record.status === "Holiday" &&
-                                  record.holidayName
-                                ? `${record.status}: ${record.holidayName}`
-                                : record.status}
+                                    record.holidayName
+                                  ? `${record.status}: ${record.holidayName}`
+                                  : record.status}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -634,9 +638,41 @@ export default function AttendancePage() {
                               : "-"}
                           </TableCell>
                           <TableCell>
+                            {record.punchInDevice ? (
+                              <div className="flex items-center gap-1">
+                                {record.punchInDevice === "Mobile" ? (
+                                  <Smartphone className="h-4 w-4 text-blue-500" />
+                                ) : (
+                                  <Monitor className="h-4 w-4 text-green-500" />
+                                )}
+                                <span className="text-xs text-muted-foreground">
+                                  {record.punchInDevice}
+                                </span>
+                              </div>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell>
                             {record.punchOut
                               ? format(new Date(record.punchOut), "hh:mm a")
                               : "-"}
+                          </TableCell>
+                          <TableCell>
+                            {record.punchOutDevice ? (
+                              <div className="flex items-center gap-1">
+                                {record.punchOutDevice === "Mobile" ? (
+                                  <Smartphone className="h-4 w-4 text-blue-500" />
+                                ) : (
+                                  <Monitor className="h-4 w-4 text-green-500" />
+                                )}
+                                <span className="text-xs text-muted-foreground">
+                                  {record.punchOutDevice}
+                                </span>
+                              </div>
+                            ) : (
+                              "-"
+                            )}
                           </TableCell>
                           <TableCell>
                             {record.totalHours > 0
