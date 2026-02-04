@@ -17,6 +17,15 @@ import {
 } from "@/components/ui/card";
 import { CompanyService } from "@/lib/services/company.service";
 import { Separator } from "@/components/ui/separator";
+import OfficeLocationsManager from "./office-locations-manager";
+
+interface OfficeLocation {
+  _id?: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+}
 
 interface CompanyProfileData {
   companyName: string;
@@ -33,8 +42,10 @@ interface CompanyProfileData {
   ifscCode: string;
   swiftCode: string;
   termsUrl: string;
-  logoUrl?: string; // Add these strict types
+  logoUrl?: string;
   signatureUrl?: string;
+  officeLocations?: OfficeLocation[];
+  updatedAt?: string;
 }
 
 export default function CompanyProfileForm() {
@@ -336,6 +347,18 @@ export default function CompanyProfileForm() {
               </div>
             </dl>
           </div>
+
+          <Separator />
+
+          {/* Office Locations */}
+          <OfficeLocationsManager
+            locations={profileData.officeLocations || []}
+            updatedAt={profileData.updatedAt}
+            onSave={async (locations) => {
+              await CompanyService.updateOfficeLocations(locations);
+              await fetchProfile();
+            }}
+          />
         </CardContent>
       </Card>
     );
@@ -474,6 +497,16 @@ export default function CompanyProfileForm() {
               </div>
             </div>
           </div>
+
+          {/* Office Locations */}
+          <OfficeLocationsManager
+            locations={profileData?.officeLocations || []}
+            updatedAt={profileData?.updatedAt}
+            onSave={async (locations) => {
+              await CompanyService.updateOfficeLocations(locations);
+              await fetchProfile();
+            }}
+          />
 
           <div className="flex justify-end pt-4 gap-4">
             {profileData && (

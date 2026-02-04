@@ -1,5 +1,13 @@
 import api from "@/lib/api";
 
+interface OfficeLocation {
+  _id?: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+}
+
 export const CompanyService = {
   getProfile: async () => {
     const { data } = await api.get("/company");
@@ -13,6 +21,11 @@ export const CompanyService = {
         "Content-Type": "multipart/form-data",
       },
     });
+    return data;
+  },
+
+  updateOfficeLocations: async (locations: OfficeLocation[]) => {
+    const { data } = await api.patch("/company/locations", { officeLocations: locations });
     return data;
   },
 };
