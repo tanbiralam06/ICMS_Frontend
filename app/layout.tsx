@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ICMS - Internal Company Management System",
+  title: "BMS - Biomoneta Management System",
   description: "Manage users, attendance, leaves, and tasks.",
 };
 
