@@ -45,10 +45,10 @@ export default function InvoiceViewPage() {
     window.print();
   };
 
-  const getImageUrl = (path: string | null) => {
+  // Helper to get image source - Base64 data URIs work directly
+  const getImageSrc = (path: string | null) => {
     if (!path) return undefined;
-    if (path.startsWith("http")) return path;
-    return `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${path}`;
+    return path; // Base64 data URI works directly as src
   };
 
   return (
@@ -87,9 +87,9 @@ export default function InvoiceViewPage() {
         {/* 1. Header Section */}
         <div className="flex justify-between items-start border-b border-neutral-200 pb-6 mb-6">
           <div className="w-1/2">
-            {company.logoUrl && (
+            {company.logoBase64 && (
               <img
-                src={getImageUrl(company.logoUrl) || ""}
+                src={getImageSrc(company.logoBase64) || ""}
                 alt="Company Logo"
                 className="h-20 w-auto object-contain mb-3"
               />
@@ -333,9 +333,9 @@ export default function InvoiceViewPage() {
             </div>
 
             <div className="text-right">
-              {company.signatureUrl && (
+              {company.signatureBase64 && (
                 <img
-                  src={getImageUrl(company.signatureUrl) || ""}
+                  src={getImageSrc(company.signatureBase64) || ""}
                   alt="Signature"
                   className="h-12 w-auto object-contain ml-auto mb-2"
                 />

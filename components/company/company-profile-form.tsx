@@ -42,8 +42,8 @@ interface CompanyProfileData {
   ifscCode: string;
   swiftCode: string;
   termsUrl: string;
-  logoUrl?: string;
-  signatureUrl?: string;
+  logoBase64?: string;
+  signatureBase64?: string;
   officeLocations?: OfficeLocation[];
   updatedAt?: string;
 }
@@ -89,8 +89,8 @@ export default function CompanyProfileForm() {
       Object.keys(data).forEach((key) => {
         setValue(key as any, data[key]);
       });
-      if (data.logoUrl) setExistingLogo(data.logoUrl);
-      if (data.signatureUrl) setExistingSignature(data.signatureUrl);
+      if (data.logoBase64) setExistingLogo(data.logoBase64);
+      if (data.signatureBase64) setExistingSignature(data.signatureBase64);
     } catch (error: any) {
       // 404 means no profile yet, so we default to Edit mode
       if (error.response?.status === 404) {
@@ -166,12 +166,10 @@ export default function CompanyProfileForm() {
     }
   };
 
-  // Helper to render image with full URL
-  const getImageUrl = (path: string | null | undefined) => {
+  // Helper to render image - Base64 data URIs work directly as src
+  const getImageSrc = (path: string | null | undefined) => {
     if (!path) return null;
-    if (path.startsWith("http")) return path; // Already absolute (if ever)
-    // Ensure path starts with /public if currently managed that way, or just append to API base
-    return `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${path}`;
+    return path; // Base64 data URI or blob URL works directly
   };
 
   const renderImagePreview = (
@@ -179,7 +177,7 @@ export default function CompanyProfileForm() {
     existingUrl: string | null,
     label: string
   ) => {
-    const src = filePreview || getImageUrl(existingUrl);
+    const src = filePreview || getImageSrc(existingUrl);
 
     return (
       <div className="mt-2">
@@ -251,9 +249,9 @@ export default function CompanyProfileForm() {
             <div className="flex gap-8">
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Logo</h3>
-                {profileData.logoUrl ? (
+                {profileData.logoBase64 ? (
                   <img
-                    src={getImageUrl(profileData.logoUrl)!}
+                    src={profileData.logoBase64}
                     alt="Logo"
                     className="h-16 w-auto object-contain"
                   />
@@ -265,9 +263,9 @@ export default function CompanyProfileForm() {
                 <h3 className="text-sm font-medium text-gray-500 mb-2">
                   Authorized Signature
                 </h3>
-                {profileData.signatureUrl ? (
+                {profileData.signatureBase64 ? (
                   <img
-                    src={getImageUrl(profileData.signatureUrl)!}
+                    src={profileData.signatureBase64}
                     alt="Signature"
                     className="h-16 w-auto object-contain"
                   />
