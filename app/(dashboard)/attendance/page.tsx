@@ -6,16 +6,17 @@ import { format, isSameDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 import {
   Calendar as CalendarIcon,
-  Clock,
   CheckCircle2,
-  XCircle,
   Plus,
   Trash2,
   Smartphone,
   Monitor,
 } from "lucide-react";
 
-import api from "@/lib/api";
+import {
+  AttendanceService,
+  HolidayService,
+} from "@/lib/services/attendance.service";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -55,8 +56,7 @@ export default function AttendancePage() {
     DateRange | undefined
   >();
 
-  // Need to get role for permission check - reusing logic from sidebar or similar
-  // Ideally this should be in a global store context, but reading from localStorage for now as confirmed by existing patterns
+  // Get role from localStorage
   if (typeof window !== "undefined" && !role) {
     const userStr = localStorage.getItem("user");
     if (userStr) {
@@ -69,55 +69,49 @@ export default function AttendancePage() {
 
   const queryClient = useQueryClient();
 
+  // ===== Queries =====
   const { data: todayAttendance, isLoading: isLoadingToday } = useQuery({
     queryKey: ["attendance", "today"],
-    queryFn: async () => {
-      const res = await api.get("/attendance/me/today");
-      return res.data;
-    },
+    queryFn: AttendanceService.getTodayAttendance,
   });
 
   const { data: monthlyReport } = useQuery({
     queryKey: ["attendance", "monthly", date?.getMonth(), date?.getFullYear()],
-    queryFn: async () => {
+    queryFn: () => {
       if (!date) return null;
-      const res = await api.get(
-        `/attendance/me/monthly?month=${
-          date.getMonth() + 1
-        }&year=${date.getFullYear()}`,
+      return AttendanceService.getMonthlyReport(
+        date.getMonth() + 1,
+        date.getFullYear(),
       );
-      return res.data;
     },
     enabled: !!date,
   });
 
   const { data: dailyAttendance } = useQuery({
     queryKey: ["attendance", "daily", adminDate],
-    queryFn: async () => {
+    queryFn: () => {
       if (!adminDate) return null;
-      const formattedDate = format(adminDate, "yyyy-MM-dd");
-      const res = await api.get(`/attendance/daily?date=${formattedDate}`);
-      return res.data;
+      return AttendanceService.getDailyAttendance(format(adminDate, "yyyy-MM-dd"));
     },
     enabled: !!adminDate && role !== "Employee",
   });
 
   const { data: holidays, refetch: refetchHolidays } = useQuery({
     queryKey: ["holidays"],
-    queryFn: async () => {
-      const res = await api.get("/holidays");
-      return res.data;
-    },
+    queryFn: HolidayService.getAll,
   });
 
+  // ===== Mutations =====
   const addHolidayMutation = useMutation({
-    mutationFn: async () => {
-      if (!newHolidayName || !newHolidayRange?.from) return;
-      return await api.post("/holidays", {
-        name: newHolidayName,
-        startDate: newHolidayRange.from,
-        endDate: newHolidayRange.to || newHolidayRange.from,
-      });
+    mutationFn: () => {
+      if (!newHolidayName || !newHolidayRange?.from) {
+        return Promise.reject(new Error("Missing holiday data"));
+      }
+      return HolidayService.add(
+        newHolidayName,
+        newHolidayRange.from,
+        newHolidayRange.to || newHolidayRange.from,
+      );
     },
     onSuccess: () => {
       toast.success("Holiday added successfully");
@@ -131,9 +125,7 @@ export default function AttendancePage() {
   });
 
   const deleteHolidayMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return await api.delete(`/holidays/${id}`);
-    },
+    mutationFn: HolidayService.delete,
     onSuccess: () => {
       toast.success("Holiday deleted successfully");
       refetchHolidays();
@@ -144,53 +136,10 @@ export default function AttendancePage() {
   });
 
   const punchMutation = useMutation({
-    mutationFn: async () => {
-      return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error("Geolocation is not supported by your browser"));
-          return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            try {
-              const { latitude, longitude } = position.coords;
-              const res = await api.post("/attendance/punch", {
-                latitude,
-                longitude,
-              });
-              resolve(res);
-            } catch (error) {
-              reject(error);
-            }
-          },
-          (error) => {
-            let errorMessage = "Failed to get location";
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                errorMessage =
-                  "Location permission denied. Please allow location access to mark attendance.";
-                break;
-              case error.POSITION_UNAVAILABLE:
-                errorMessage = "Location information is unavailable.";
-                break;
-              case error.TIMEOUT:
-                errorMessage = "The request to get user location timed out.";
-                break;
-            }
-            reject(new Error(errorMessage));
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 20000,
-            maximumAge: 0,
-          },
-        );
-      });
-    },
+    mutationFn: AttendanceService.punch,
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["attendance"] });
-      toast.success(data.data.message);
+      toast.success(data.message);
     },
     onError: (error: any) => {
       const message =
