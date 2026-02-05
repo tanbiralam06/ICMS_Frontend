@@ -132,7 +132,7 @@ export function Sidebar() {
             I
           </div>
           <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-100">
-            ICMS
+            BMS
           </h1>
         </Link>
       </div>

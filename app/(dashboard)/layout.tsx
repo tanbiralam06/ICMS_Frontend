@@ -16,7 +16,7 @@ export default function DashboardLayout({
         <div className="md:hidden print:hidden p-4 bg-white dark:bg-slate-900 border-b dark:border-slate-800 flex items-center shadow-sm sticky top-0 z-50">
           <MobileSidebar />
           <span className="font-bold text-lg text-slate-800 dark:text-slate-100 ml-2">
-            ICMS
+            BMS
           </span>
         </div>
         <div className="p-8">{children}</div>
