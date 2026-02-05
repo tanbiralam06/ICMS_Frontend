@@ -180,6 +180,11 @@ export default function AttendancePage() {
             }
             reject(new Error(errorMessage));
           },
+          {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0,
+          },
         );
       });
     },
