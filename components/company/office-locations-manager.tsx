@@ -153,7 +153,7 @@ export default function OfficeLocationsManager({
 
   return (
     <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-4 space-y-0 pb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
             <MapPin className="h-5 w-5 text-primary" />
@@ -165,27 +165,32 @@ export default function OfficeLocationsManager({
             </CardDescription>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
           {updatedAt && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
               <Clock className="h-3.5 w-3.5" />
               <span>Updated: {formatDate(updatedAt)}</span>
             </div>
           )}
           {!isManaging ? (
-            <Button onClick={() => setIsManaging(true)} size="sm" variant="outline">
+            <Button 
+              onClick={() => setIsManaging(true)} 
+              size="sm" 
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
               <Pencil className="h-4 w-4 mr-1" />
               Manage Locations
             </Button>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               {!isAdding && editingIndex === null && (
-                <Button onClick={handleAdd} size="sm" variant="outline">
+                <Button onClick={handleAdd} size="sm" variant="outline" className="flex-1 sm:flex-none">
                   <Plus className="h-4 w-4 mr-1" />
                   Add
                 </Button>
               )}
-              <Button onClick={handleStopManaging} size="sm" variant="ghost">
+              <Button onClick={handleStopManaging} size="sm" variant="ghost" className="flex-1 sm:flex-none">
                 <X className="h-4 w-4 mr-1" />
                 Done
               </Button>
@@ -205,32 +210,92 @@ export default function OfficeLocationsManager({
             </p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Latitude</TableHead>
-                <TableHead>Longitude</TableHead>
-                <TableHead>Radius (m)</TableHead>
-                {isManaging && <TableHead className="w-[100px]">Actions</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {locations.map((loc, index) => (
-                <TableRow key={loc._id || index}>
-                  {editingIndex === index ? (
-                    <>
-                      <TableCell>
+          <>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+              {isAdding && (
+                <div className="p-4 border rounded-lg bg-muted/50 space-y-3">
+                  <h4 className="font-medium text-sm">New Location</h4>
+                  <div className="space-y-3">
+                    <Input
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder="Office name"
+                      className="bg-background"
+                      autoFocus
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                       <Input
+                        type="number"
+                        step="any"
+                        value={formData.latitude || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            latitude: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="Latitude"
+                        className="bg-background"
+                      />
+                      <Input
+                        type="number"
+                        step="any"
+                        value={formData.longitude || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            longitude: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        placeholder="Longitude"
+                        className="bg-background"
+                      />
+                    </div>
+                     <div className="flex items-center gap-2">
+                       <span className="text-sm text-muted-foreground shrink-0">Radius (m):</span>
                         <Input
-                          value={formData.name}
+                          type="number"
+                          value={formData.radiusMeters}
                           onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
+                            setFormData({
+                              ...formData,
+                              radiusMeters: parseInt(e.target.value) || 50,
+                            })
                           }
-                          placeholder="Office name"
-                          className="h-8"
+                          className="bg-background w-24"
                         />
-                      </TableCell>
-                      <TableCell>
+                     </div>
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2">
+                    <Button size="sm" variant="ghost" onClick={resetForm} disabled={saving}>
+                      Cancel
+                    </Button>
+                    <Button size="sm" onClick={handleSaveRow} disabled={saving}>
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {locations.map((loc, index) => (
+                <div key={loc._id || index} className="p-4 border rounded-lg space-y-3">
+                  {editingIndex === index ? (
+                     <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                         <h4 className="font-medium text-sm">Edit Location</h4>
+                      </div>
+                      <Input
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                        placeholder="Office name"
+                        className="bg-background"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
                         <Input
                           type="number"
                           step="any"
@@ -241,10 +306,9 @@ export default function OfficeLocationsManager({
                               latitude: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="h-8 w-28"
+                          placeholder="Latitude"
+                          className="bg-background"
                         />
-                      </TableCell>
-                      <TableCell>
                         <Input
                           type="number"
                           step="any"
@@ -255,6 +319,291 @@ export default function OfficeLocationsManager({
                               longitude: parseFloat(e.target.value) || 0,
                             })
                           }
+                          placeholder="Longitude"
+                          className="bg-background"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <span className="text-sm text-muted-foreground shrink-0">Radius (m):</span>
+                          <Input
+                            type="number"
+                            value={formData.radiusMeters}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                radiusMeters: parseInt(e.target.value) || 50,
+                              })
+                            }
+                            className="bg-background w-24"
+                          />
+                       </div>
+                      <div className="flex gap-2 justify-end pt-2">
+                        <Button size="sm" variant="ghost" onClick={resetForm} disabled={saving}>
+                          Cancel
+                        </Button>
+                        <Button size="sm" onClick={handleSaveRow} disabled={saving}>
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="font-medium text-base">{loc.name}</div>
+                          <div className="text-xs text-muted-foreground mt-1 flex flex-col gap-0.5">
+                            <span>Lat: {loc.latitude}</span>
+                            <span>Lng: {loc.longitude}</span>
+                          </div>
+                        </div>
+                        <Badge variant="secondary">{loc.radiusMeters}m</Badge>
+                      </div>
+                      {isManaging && (
+                        <div className="flex gap-2 justify-end pt-2 border-t mt-3">
+                           <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEdit(index)}
+                              disabled={saving || isAdding}
+                            >
+                              <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10"
+                                  disabled={saving || isAdding}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Delete Location?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "{loc.name}"?
+                                    Employees will no longer be able to punch in
+                                    from this location.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDelete(index)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop View (Table) */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Latitude</TableHead>
+                    <TableHead>Longitude</TableHead>
+                    <TableHead>Radius (m)</TableHead>
+                    {isManaging && <TableHead className="w-[100px]">Actions</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {locations.map((loc, index) => (
+                    <TableRow key={loc._id || index}>
+                      {editingIndex === index ? (
+                        <>
+                          <TableCell>
+                            <Input
+                              value={formData.name}
+                              onChange={(e) =>
+                                setFormData({ ...formData, name: e.target.value })
+                              }
+                              placeholder="Office name"
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="any"
+                              value={formData.latitude}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  latitude: parseFloat(e.target.value) || 0,
+                                })
+                              }
+                              className="h-8 w-28"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="any"
+                              value={formData.longitude}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  longitude: parseFloat(e.target.value) || 0,
+                                })
+                              }
+                              className="h-8 w-28"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              value={formData.radiusMeters}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  radiusMeters: parseInt(e.target.value) || 50,
+                                })
+                              }
+                              className="h-8 w-20"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                onClick={handleSaveRow}
+                                disabled={saving}
+                              >
+                                <Check className="h-4 w-4 text-green-600" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                onClick={resetForm}
+                                disabled={saving}
+                              >
+                                <X className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell className="font-medium">{loc.name}</TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {loc.latitude}
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {loc.longitude}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{loc.radiusMeters}m</Badge>
+                          </TableCell>
+                          {isManaging && (
+                            <TableCell>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  onClick={() => handleEdit(index)}
+                                  disabled={saving || isAdding}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-8 w-8 text-destructive hover:text-destructive"
+                                      disabled={saving || isAdding}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Delete Location?
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete "{loc.name}"?
+                                        Employees will no longer be able to punch in
+                                        from this location.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => handleDelete(index)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </TableCell>
+                          )}
+                        </>
+                      )}
+                    </TableRow>
+                  ))}
+                  {isAdding && (
+                    <TableRow>
+                      <TableCell>
+                        <Input
+                          value={formData.name}
+                          onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                          }
+                          placeholder="e.g. Head Office"
+                          className="h-8"
+                          autoFocus
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="any"
+                          value={formData.latitude || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              latitude: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="26.7198"
+                          className="h-8 w-28"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="any"
+                          value={formData.longitude || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              longitude: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="88.3905"
                           className="h-8 w-28"
                         />
                       </TableCell>
@@ -293,153 +642,12 @@ export default function OfficeLocationsManager({
                           </Button>
                         </div>
                       </TableCell>
-                    </>
-                  ) : (
-                    <>
-                      <TableCell className="font-medium">{loc.name}</TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {loc.latitude}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {loc.longitude}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{loc.radiusMeters}m</Badge>
-                      </TableCell>
-                      {isManaging && (
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-8 w-8"
-                              onClick={() => handleEdit(index)}
-                              disabled={saving || isAdding}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8 text-destructive hover:text-destructive"
-                                  disabled={saving || isAdding}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Delete Location?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{loc.name}"?
-                                    Employees will no longer be able to punch in
-                                    from this location.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDelete(index)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
-                      )}
-                    </>
+                    </TableRow>
                   )}
-                </TableRow>
-              ))}
-              {isAdding && (
-                <TableRow>
-                  <TableCell>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      placeholder="e.g. Head Office"
-                      className="h-8"
-                      autoFocus
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      step="any"
-                      value={formData.latitude || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          latitude: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      placeholder="26.7198"
-                      className="h-8 w-28"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      step="any"
-                      value={formData.longitude || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          longitude: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      placeholder="88.3905"
-                      className="h-8 w-28"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      value={formData.radiusMeters}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          radiusMeters: parseInt(e.target.value) || 50,
-                        })
-                      }
-                      className="h-8 w-20"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        onClick={handleSaveRow}
-                        disabled={saving}
-                      >
-                        <Check className="h-4 w-4 text-green-600" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8"
-                        onClick={resetForm}
-                        disabled={saving}
-                      >
-                        <X className="h-4 w-4 text-red-600" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
