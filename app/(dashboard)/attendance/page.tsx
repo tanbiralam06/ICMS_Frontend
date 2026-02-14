@@ -11,6 +11,7 @@ import {
   Trash2,
   Smartphone,
   Monitor,
+  MapPin,
 } from "lucide-react";
 
 import {
@@ -223,6 +224,14 @@ export default function AttendancePage() {
                             )
                           : "--:--"}
                       </div>
+                      {todayAttendance.data.punchInLocation && (
+                        <div className="flex items-center justify-center gap-1 mt-1">
+                          <MapPin className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {todayAttendance.data.punchInLocation}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">
@@ -236,6 +245,14 @@ export default function AttendancePage() {
                             )
                           : "--:--"}
                       </div>
+                      {todayAttendance.data.punchOutLocation && (
+                        <div className="flex items-center justify-center gap-1 mt-1">
+                          <MapPin className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {todayAttendance.data.punchOutLocation}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -318,6 +335,14 @@ export default function AttendancePage() {
                               ? format(new Date(record.punchOut), "HH:mm")
                               : "Active"}
                           </div>
+                          {record.punchInLocation && (
+                            <div className="flex items-center justify-end gap-1 mt-1">
+                              <MapPin className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground">
+                                {record.punchInLocation}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))
@@ -526,15 +551,17 @@ export default function AttendancePage() {
                       <TableHead>Status</TableHead>
                       <TableHead>Punch In</TableHead>
                       <TableHead>Device</TableHead>
+                      <TableHead>Location</TableHead>
                       <TableHead>Punch Out</TableHead>
                       <TableHead>Device</TableHead>
+                      <TableHead>Location</TableHead>
                       <TableHead>Total Hours</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {dailyAttendance?.data?.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
+                        <TableCell colSpan={9} className="h-24 text-center">
                           No records found.
                         </TableCell>
                       </TableRow>
@@ -608,6 +635,18 @@ export default function AttendancePage() {
                             )}
                           </TableCell>
                           <TableCell>
+                            {record.punchInLocation ? (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-4 w-4 text-orange-500" />
+                                <span className="text-xs text-muted-foreground">
+                                  {record.punchInLocation}
+                                </span>
+                              </div>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell>
                             {record.punchOut
                               ? format(new Date(record.punchOut), "hh:mm a")
                               : "-"}
@@ -622,6 +661,18 @@ export default function AttendancePage() {
                                 )}
                                 <span className="text-xs text-muted-foreground">
                                   {record.punchOutDevice}
+                                </span>
+                              </div>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {record.punchOutLocation ? (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="h-4 w-4 text-orange-500" />
+                                <span className="text-xs text-muted-foreground">
+                                  {record.punchOutLocation}
                                 </span>
                               </div>
                             ) : (

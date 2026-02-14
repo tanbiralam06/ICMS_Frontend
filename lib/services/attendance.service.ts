@@ -8,7 +8,9 @@ export interface AttendanceRecord {
   totalHours: number;
   status: "Present" | "Absent" | "Half-day" | "On Leave" | "Holiday";
   punchInDevice?: string;
+  punchInLocation?: string;
   punchOutDevice?: string;
+  punchOutLocation?: string;
   leaveType?: string;
   holidayName?: string;
 }
