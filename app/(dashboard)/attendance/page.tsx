@@ -364,7 +364,7 @@ export default function AttendancePage() {
             </CardHeader>
             <CardContent>
               {role !== "Employee" && (
-                <div className="flex items-end gap-4 mb-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="holiday-name">Holiday Name</Label>
                     <Input
@@ -381,7 +381,7 @@ export default function AttendancePage() {
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-[240px] justify-start text-left font-normal",
+                            "w-full md:w-[240px] justify-start text-left font-normal",
                             !newHolidayRange && "text-muted-foreground",
                           )}
                         >
@@ -418,6 +418,7 @@ export default function AttendancePage() {
                     </Popover>
                   </div>
                   <Button
+                    className="w-full md:w-auto"
                     onClick={() => addHolidayMutation.mutate()}
                     disabled={
                       addHolidayMutation.isPending ||
@@ -508,7 +509,7 @@ export default function AttendancePage() {
           <TabsContent value="admin-view" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                     <CardTitle>Daily Attendance Report</CardTitle>
                     <CardDescription>
@@ -520,7 +521,7 @@ export default function AttendancePage() {
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-[240px] justify-start text-left font-normal",
+                          "w-full md:w-[240px] justify-start text-left font-normal",
                           !adminDate && "text-muted-foreground",
                         )}
                       >
