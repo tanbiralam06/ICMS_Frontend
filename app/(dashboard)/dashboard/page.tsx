@@ -37,6 +37,7 @@ import {
 import api from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { DashboardSkeleton } from "@/components/dashboard-skeleton";
 
 const COLORS = {
   primary: "#3B82F6",
@@ -97,11 +98,7 @@ export default function DashboardPage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-lg">Loading dashboard...</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const { overview, charts, recent } = dashboardData || {};
