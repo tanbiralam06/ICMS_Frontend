@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import axios from "axios";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Loader2, Eye, EyeOff, AlertCircle, Pencil } from "lucide-react";
 
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,7 @@ type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["me"],
@@ -142,6 +143,7 @@ export default function ProfilePage() {
     onSuccess: () => {
       toast.success("Profile updated successfully");
       queryClient.invalidateQueries({ queryKey: ["me"] });
+      setIsEditingProfile(false);
     },
     onError: () => {
       toast.error("Failed to update profile");
@@ -222,57 +224,110 @@ export default function ProfilePage() {
           <div className="grid gap-6 md:grid-cols-2 mt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Personal Details</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Personal Details</CardTitle>
+                  {!isEditingProfile && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingProfile(true)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Edit Profile
+                    </Button>
+                  )}
+                </div>
                 <CardDescription>
                   Update your personal information here.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...profileForm}>
-                  <form
-                    onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                    className="space-y-6"
-                  >
-                    <FormField
-                      control={profileForm.control}
-                      name="phoneNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+1234567890" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={profileForm.control}
-                      name="address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Address</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Your user address"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
+                {!isEditingProfile ? (
+                  <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Phone Number
+                        </p>
+                        <p className="text-sm">
+                          {user?.phoneNumber || "Not set"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Address
+                        </p>
+                        <p className="text-sm">{user?.address || "Not set"}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Date of Birth
+                        </p>
+                        <p className="text-sm">
+                          {user?.dateOfBirth
+                            ? user.dateOfBirth.split("T")[0]
+                            : "Not set"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Gender
+                        </p>
+                        <p className="text-sm">{user?.gender || "Not set"}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Bio
+                      </p>
+                      <p className="text-sm">{user?.bio || "Not set"}</p>
+                    </div>
+
+                    {user?.emergencyContact && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-muted-foreground">
+                          Emergency Contact
+                        </p>
+                        <div className="rounded-md border p-3 text-sm">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <span className="text-muted-foreground">
+                                Name:
+                              </span>{" "}
+                              {user.emergencyContact.name || "-"}
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">
+                                Relation:
+                              </span>{" "}
+                              {user.emergencyContact.relationship || "-"}
+                            </div>
+                            <div className="col-span-2">
+                              <span className="text-muted-foreground">
+                                Phone:
+                              </span>{" "}
+                              {user.emergencyContact.phoneNumber || "-"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Form {...profileForm}>
+                    <form
+                      onSubmit={profileForm.handleSubmit(onProfileSubmit)}
+                      className="space-y-6"
+                    >
                       <FormField
                         control={profileForm.control}
-                        name="dateOfBirth"
+                        name="phoneNumber"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Date of Birth</FormLabel>
+                            <FormLabel>Phone Number</FormLabel>
                             <FormControl>
-                              <Input type="date" {...field} />
+                              <Input placeholder="+1234567890" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -281,114 +336,158 @@ export default function ProfilePage() {
 
                       <FormField
                         control={profileForm.control}
-                        name="gender"
+                        name="address"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Gender</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select gender" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="Male">Male</SelectItem>
-                                <SelectItem value="Female">Female</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                                <SelectItem value="Prefer not to say">
-                                  Prefer not to say
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <FormLabel>Address</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Your user address"
+                                {...field}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                    </div>
 
-                    <FormField
-                      control={profileForm.control}
-                      name="bio"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Bio</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Tell us a little bit about yourself"
-                              className="resize-none"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Max 500 characters.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="space-y-4">
-                      <h4 className="text-sm font-semibold">
-                        Emergency Contact
-                      </h4>
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={profileForm.control}
-                          name="emergencyContact.name"
+                          name="dateOfBirth"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Contact Name</FormLabel>
+                              <FormLabel>Date of Birth</FormLabel>
                               <FormControl>
-                                <Input placeholder="Name" {...field} />
+                                <Input type="date" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
+
                         <FormField
                           control={profileForm.control}
-                          name="emergencyContact.relationship"
+                          name="gender"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Relationship</FormLabel>
+                              <FormLabel>Gender</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select gender" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Male">Male</SelectItem>
+                                  <SelectItem value="Female">Female</SelectItem>
+                                  <SelectItem value="Other">Other</SelectItem>
+                                  <SelectItem value="Prefer not to say">
+                                    Prefer not to say
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={profileForm.control}
+                        name="bio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bio</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Tell us a little bit about yourself"
+                                className="resize-none"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Max 500 characters.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="space-y-4">
+                        <h4 className="text-sm font-semibold">
+                          Emergency Contact
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={profileForm.control}
+                            name="emergencyContact.name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Contact Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={profileForm.control}
+                            name="emergencyContact.relationship"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Relationship</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Relationship"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={profileForm.control}
+                          name="emergencyContact.phoneNumber"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Emergency Phone</FormLabel>
                               <FormControl>
-                                <Input
-                                  placeholder="Relationship"
-                                  {...field}
-                                />
+                                <Input placeholder="Phone" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                      <FormField
-                        control={profileForm.control}
-                        name="emergencyContact.phoneNumber"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Emergency Phone</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Phone" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
 
-                    <Button
-                      type="submit"
-                      disabled={profileMutation.isPending}
-                    >
-                      {profileMutation.isPending ? "Saving..." : "Save Changes"}
-                    </Button>
-                  </form>
-                </Form>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="submit"
+                          disabled={profileMutation.isPending}
+                        >
+                          {profileMutation.isPending
+                            ? "Saving..."
+                            : "Save Changes"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsEditingProfile(false)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                )}
               </CardContent>
             </Card>
 
