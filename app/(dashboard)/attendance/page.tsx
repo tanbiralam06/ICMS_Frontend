@@ -94,7 +94,7 @@ export default function AttendancePage() {
       if (!adminDate) return null;
       return AttendanceService.getDailyAttendance(format(adminDate, "yyyy-MM-dd"));
     },
-    enabled: !!adminDate && role !== "Employee",
+    enabled: !!adminDate && role !== "Employee" && role !== "Accountant",
   });
 
   const { data: holidays, refetch: refetchHolidays } = useQuery({
@@ -161,7 +161,7 @@ export default function AttendancePage() {
         <TabsList>
           <TabsTrigger value="my-attendance">My Attendance</TabsTrigger>
           <TabsTrigger value="holidays">Holidays</TabsTrigger>
-          {role !== "Employee" && (
+          {role !== "Employee" && role !== "Accountant" && (
             <TabsTrigger value="admin-view">Admin View</TabsTrigger>
           )}
         </TabsList>
@@ -365,7 +365,7 @@ export default function AttendancePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {role !== "Employee" && (
+              {role !== "Employee" && role !== "Accountant" && (
                 <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900/50">
                   <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="holiday-name">Holiday Name</Label>
@@ -486,7 +486,7 @@ export default function AttendancePage() {
                             </span>
                           </div>
                         </div>
-                        {role !== "Employee" && (
+                        {role !== "Employee" && role !== "Accountant" && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -507,7 +507,7 @@ export default function AttendancePage() {
           </Card>
         </TabsContent>
 
-        {role !== "Employee" && (
+        {role !== "Employee" && role !== "Accountant" && (
           <TabsContent value="admin-view" className="space-y-4">
             <Card>
               <CardHeader>

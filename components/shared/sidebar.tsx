@@ -113,7 +113,7 @@ export function Sidebar() {
     if (route.label === "Departments") return role === "Admin";
     if (route.label === "Company Profile") return role === "Admin";
     if (route.label === "Invoices")
-      return role === "Admin" || role === "Manager";
+      return role === "Admin" || role === "Manager" || role === "Accountant";
     return true;
   });
 

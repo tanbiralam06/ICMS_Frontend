@@ -296,6 +296,7 @@ export default function UsersPage() {
                           <SelectItem value="Admin">Admin</SelectItem>
                           <SelectItem value="Manager">Manager</SelectItem>
                           <SelectItem value="HR">HR</SelectItem>
+                          <SelectItem value="Accountant">Accountant</SelectItem>
                           <SelectItem value="Employee">Employee</SelectItem>
                         </SelectContent>
                       </Select>
@@ -530,6 +531,7 @@ export default function UsersPage() {
                         <SelectItem value="Admin">Admin</SelectItem>
                         <SelectItem value="Manager">Manager</SelectItem>
                         <SelectItem value="HR">HR</SelectItem>
+                        <SelectItem value="Accountant">Accountant</SelectItem>
                         <SelectItem value="Employee">Employee</SelectItem>
                       </SelectContent>
                     </Select>
