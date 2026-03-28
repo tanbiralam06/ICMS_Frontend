@@ -108,10 +108,12 @@ export default function AttendancePage() {
       if (!newHolidayName || !newHolidayRange?.from) {
         return Promise.reject(new Error("Missing holiday data"));
       }
+      const startStr = format(newHolidayRange.from, "yyyy-MM-dd");
+      const endStr = format(newHolidayRange.to || newHolidayRange.from, "yyyy-MM-dd");
       return HolidayService.add(
         newHolidayName,
-        newHolidayRange.from,
-        newHolidayRange.to || newHolidayRange.from,
+        startStr,
+        endStr,
       );
     },
     onSuccess: () => {

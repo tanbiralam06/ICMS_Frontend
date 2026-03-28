@@ -121,7 +121,7 @@ export const HolidayService = {
   /**
    * Add a new holiday.
    */
-  add: async (name: string, startDate: Date, endDate: Date) => {
+  add: async (name: string, startDate: string | Date, endDate: string | Date) => {
     const { data } = await api.post("/holidays", {
       name,
       startDate,
