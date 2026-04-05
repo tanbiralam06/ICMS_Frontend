@@ -16,6 +16,7 @@ import {
   Sun,
   Building2,
   FileText,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -67,6 +68,12 @@ const routes = [
     color: "text-green-600",
   },
   {
+    label: "Inventory",
+    icon: Package,
+    href: "/inventory",
+    color: "text-amber-600",
+  },
+  {
     label: "Company Profile",
     icon: Building2, // Using slightly different icon if available, or stay with Building
     href: "/company",
@@ -114,6 +121,7 @@ export function Sidebar() {
     if (route.label === "Company Profile") return role === "Admin";
     if (route.label === "Invoices")
       return role === "Admin" || role === "Manager" || role === "Accountant";
+    if (route.label === "Inventory") return role !== "Accountant";
     return true;
   });
 
