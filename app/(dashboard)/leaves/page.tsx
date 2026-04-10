@@ -48,7 +48,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 const leaveSchema = z.object({
-  type: z.enum(["Sick", "Casual", "Earned", "Unpaid"]),
+  type: z.enum(["Casual"]),
   fromDate: z.string(),
   toDate: z.string(),
   reason: z.string().min(5, "Reason is required"),
@@ -93,7 +93,7 @@ export default function LeavesPage() {
   const form = useForm<z.infer<typeof leaveSchema>>({
     resolver: zodResolver(leaveSchema),
     defaultValues: {
-      type: "Sick",
+      type: "Casual",
       reason: "",
     },
   });
@@ -159,32 +159,6 @@ export default function LeavesPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Leave Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Sick">Sick Leave</SelectItem>
-                          <SelectItem value="Casual">Casual Leave</SelectItem>
-                          <SelectItem value="Earned">Earned Leave</SelectItem>
-                          <SelectItem value="Unpaid">Unpaid Leave</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -242,20 +216,10 @@ export default function LeavesPage() {
         </Dialog>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        {balance?.data &&
-          Object.entries(balance.data).map(([type, days]: [string, any]) => (
-            <Card key={type}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {type} Leave
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{days} Days</div>
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex items-center space-x-2">
+        <Badge variant="outline" className="px-3 py-1 text-sm font-medium">
+          Casual Leave Balance: {balance?.data?.Casual ?? 0} / 18 Days
+        </Badge>
       </div>
 
       <Tabs defaultValue="my-leaves" className="space-y-4">
