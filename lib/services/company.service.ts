@@ -28,4 +28,14 @@ export const CompanyService = {
     const { data } = await api.patch("/company/locations", { officeLocations: locations });
     return data;
   },
+
+  updateAllowedIps: async (allowedIps: string[]) => {
+    const { data } = await api.patch("/company/allowed-ips", { allowedIps });
+    return data;
+  },
+
+  getMyIp: async (): Promise<string> => {
+    const { data } = await api.get("/company/my-ip");
+    return data.ip;
+  },
 };

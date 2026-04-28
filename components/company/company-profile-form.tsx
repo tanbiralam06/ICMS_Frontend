@@ -18,6 +18,7 @@ import {
 import { CompanyService } from "@/lib/services/company.service";
 import { Separator } from "@/components/ui/separator";
 import OfficeLocationsManager from "./office-locations-manager";
+import NetworkIpWhitelist from "./network-ip-whitelist";
 
 interface OfficeLocation {
   _id?: string;
@@ -45,6 +46,7 @@ interface CompanyProfileData {
   logoBase64?: string;
   signatureBase64?: string;
   officeLocations?: OfficeLocation[];
+  allowedIps?: string[];
   updatedAt?: string;
 }
 
@@ -357,6 +359,18 @@ export default function CompanyProfileForm() {
               await fetchProfile();
             }}
           />
+
+          <Separator />
+
+          {/* Network IP Whitelist */}
+          <NetworkIpWhitelist
+            allowedIps={profileData.allowedIps || []}
+            updatedAt={profileData.updatedAt}
+            onSave={async (ips) => {
+              await CompanyService.updateAllowedIps(ips);
+              await fetchProfile();
+            }}
+          />
         </CardContent>
       </Card>
     );
@@ -502,6 +516,16 @@ export default function CompanyProfileForm() {
             updatedAt={profileData?.updatedAt}
             onSave={async (locations) => {
               await CompanyService.updateOfficeLocations(locations);
+              await fetchProfile();
+            }}
+          />
+
+          {/* Network IP Whitelist */}
+          <NetworkIpWhitelist
+            allowedIps={profileData?.allowedIps || []}
+            updatedAt={profileData?.updatedAt}
+            onSave={async (ips) => {
+              await CompanyService.updateAllowedIps(ips);
               await fetchProfile();
             }}
           />
