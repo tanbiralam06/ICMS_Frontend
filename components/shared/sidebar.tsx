@@ -17,6 +17,7 @@ import {
   Building2,
   FileText,
   Package,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -78,6 +79,12 @@ const routes = [
     icon: Building2, // Using slightly different icon if available, or stay with Building
     href: "/company",
     color: "text-blue-600",
+  },
+  {
+    label: "Documents",
+    icon: FolderOpen,
+    href: "/documents",
+    color: "text-teal-600",
   },
   {
     label: "My Profile",
