@@ -14,6 +14,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
+import { DocumentService } from "@/lib/services/document.service";
+import { Download, FileText, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -22,7 +26,21 @@ interface HistoryModalProps {
 }
 
 export function HistoryModal({ isOpen, onClose, data }: HistoryModalProps) {
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
   if (!data) return null;
+
+  const handleDownload = async (docId: string) => {
+    setDownloadingId(docId);
+    try {
+      const result = await DocumentService.getDownloadUrl(docId);
+      window.open(result.downloadUrl, "_blank");
+    } catch (error) {
+      toast.error("Failed to generate download link");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -74,6 +92,45 @@ export function HistoryModal({ isOpen, onClose, data }: HistoryModalProps) {
             <p className="font-semibold">{data.receipt?.poNumber || "N/A"}</p>
           </div>
         </div>
+
+        {data.receipt?.documents?.length > 0 && (
+          <div className="mt-6 px-1">
+            <div className="border-b pb-1 mb-3">
+              <h4 className="font-bold uppercase text-[10px] text-muted-foreground tracking-wider">
+                Supporting Documents
+              </h4>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {data.receipt.documents.map((doc: any) => (
+                <div
+                  key={doc._id}
+                  className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 group"
+                >
+                  <FileText className="h-4 w-4 text-blue-500" />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium truncate max-w-[150px]">
+                      {doc.title}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {(doc.size / 1024).toFixed(1)} KB
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleDownload(doc._id)}
+                    disabled={downloadingId === doc._id}
+                    className="ml-1 p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded text-blue-600 transition-colors"
+                  >
+                    {downloadingId === doc._id ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Download className="h-3 w-3" />
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Separator className="my-6" />
 

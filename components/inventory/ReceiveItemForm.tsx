@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
@@ -31,6 +31,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
+import { MultiFileUploader } from "../shared/MultiFileUploader";
 
 const formSchema = z.object({
   date: z.date(),
@@ -44,9 +45,23 @@ const formSchema = z.object({
   poDate: z.date().optional(),
   poNumber: z.string().optional(),
   miscellaneous: z.string().optional(),
+  documents: z.array(z.string()),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = {
+  date: Date;
+  department: string;
+  contactPersonId: string;
+  materialName: string;
+  totalUnits: number;
+  unitType: string;
+  location: string;
+  invoiceAmount?: number;
+  poDate?: Date;
+  poNumber?: string;
+  miscellaneous?: string;
+  documents: string[];
+};
 
 interface ReceiveItemFormProps {
   users: any[];
@@ -74,6 +89,7 @@ export function ReceiveItemForm({
       poDate: undefined,
       poNumber: "",
       miscellaneous: "",
+      documents: [],
     },
   });
 
@@ -94,10 +110,10 @@ export function ReceiveItemForm({
     },
   });
 
-  function onSubmit(values: FormValues) {
+  const onSubmit = (values: FormValues) => {
     setIsLoading(true);
     mutation.mutate(values);
-  }
+  };
 
   return (
     <Form {...form}>
@@ -296,6 +312,25 @@ export function ReceiveItemForm({
                 <FormLabel>Miscellaneous Notes</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Any extra information..." className="min-h-[100px] resize-none" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="documents"
+            render={({ field }) => (
+              <FormItem className="col-span-full">
+                <FormLabel>Supporting Documents</FormLabel>
+                <FormControl>
+                  <MultiFileUploader
+                    category="Inventory"
+                    path={`inventory/receipts/${format(new Date(), "yyyy/MM")}`}
+                    onUploadComplete={(ids) => field.onChange(ids)}
+                    existingDocuments={[]}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

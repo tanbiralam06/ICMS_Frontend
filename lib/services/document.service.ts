@@ -48,9 +48,9 @@ export interface PaginatedResponse<T> {
 
 export const DocumentService = {
   // Get presigned upload URL
-  getUploadUrl: async (fileName: string, fileType: string, category: string) => {
+  getUploadUrl: async (fileName: string, fileType: string, category: string, path?: string) => {
     const { data } = await api.get("/documents/upload-url", {
-      params: { fileName, fileType, category },
+      params: { fileName, fileType, category, path },
     });
     return data as { uploadUrl: string; key: string };
   },
