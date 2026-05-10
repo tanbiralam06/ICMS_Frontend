@@ -18,7 +18,15 @@ import {
   FileText,
   Package,
   FolderOpen,
+  User,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -85,12 +93,6 @@ const routes = [
     icon: FolderOpen,
     href: "/documents",
     color: "text-teal-600",
-  },
-  {
-    label: "My Profile",
-    icon: Settings,
-    href: "/profile",
-    color: "text-gray-500",
   },
 ];
 
@@ -184,35 +186,69 @@ export function Sidebar() {
         })}
       </div>
 
-      {/* Footer / Settings */}
-      <div className="p-3 mt-auto space-y-2">
-        <Separator className="bg-slate-200 dark:bg-slate-800 mb-2" />
+      {/* Footer / Profile */}
+      <div className="p-3 mt-auto border-t border-slate-200 dark:border-slate-800">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 h-12 px-3 gap-3"
+            >
+              <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <User className="h-5 w-5" />
+              </div>
+              <div className="flex flex-col items-start overflow-hidden text-left">
+                <span className="text-sm font-semibold truncate w-full">
+                  Profile
+                </span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  {role || "User"}
+                </span>
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            align="start"
+            sideOffset={10}
+            className="z-[100] w-[var(--radix-dropdown-menu-trigger-width)] p-1.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xl rounded-xl"
+          >
+            <DropdownMenuItem
+              onClick={() => router.push("/profile")}
+              className="cursor-pointer py-2.5 px-3 rounded-lg transition-colors focus:bg-slate-100 dark:focus:bg-slate-800"
+            >
+              <Settings className="h-4 w-4 mr-3 text-slate-500" />
+              <span className="text-sm font-medium">My Profile</span>
+            </DropdownMenuItem>
 
-        <Button
-          onClick={toggleTheme}
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 h-9 px-3"
-        >
-          {theme === "dark" ? (
-            <Sun className="h-4 w-4 mr-3" />
-          ) : (
-            <Moon className="h-4 w-4 mr-3" />
-          )}
-          <span className="text-xs font-medium">
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
-          </span>
-        </Button>
+            <DropdownMenuItem
+              onClick={toggleTheme}
+              className="cursor-pointer py-2.5 px-3 rounded-lg transition-colors focus:bg-slate-100 dark:focus:bg-slate-800"
+            >
+              {theme === "dark" ? (
+                <>
+                  <Sun className="h-4 w-4 mr-3 text-amber-500" />
+                  <span className="text-sm font-medium">Light Mode</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4 mr-3 text-indigo-500" />
+                  <span className="text-sm font-medium">Dark Mode</span>
+                </>
+              )}
+            </DropdownMenuItem>
 
-        <Button
-          onClick={handleLogout}
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 h-9 px-3"
-        >
-          <LogOut className="h-4 w-4 mr-3" />
-          <span className="text-xs font-medium">Logout</span>
-        </Button>
+            <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800" />
+
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-red-600 dark:text-red-500 focus:text-red-600 dark:focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-950/30 cursor-pointer py-2.5 px-3 rounded-lg transition-colors"
+            >
+              <LogOut className="h-4 w-4 mr-3" />
+              <span className="text-sm font-medium">Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
