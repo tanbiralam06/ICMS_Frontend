@@ -11,6 +11,8 @@ import {
   Loader2,
   Filter,
   FolderOpen,
+  Link as LinkIcon,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -263,13 +265,17 @@ export default function DocumentsPage() {
                 <TableRow key={doc._id}>
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <FileText className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                      {doc.isExternal ? (
+                        <LinkIcon className="h-5 w-5 text-indigo-500 flex-shrink-0" />
+                      ) : (
+                        <FileText className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                      )}
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate max-w-[200px]">
                           {doc.title}
                         </p>
                         <p className="text-xs text-muted-foreground truncate max-w-[200px]">
-                          {doc.originalName}
+                          {doc.isExternal ? doc.url : doc.originalName}
                         </p>
                       </div>
                     </div>
@@ -285,7 +291,7 @@ export default function DocumentsPage() {
                     {doc.uploadedBy?.fullName || "—"}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {formatFileSize(doc.size)}
+                    {doc.isExternal ? "External Link" : formatFileSize(doc.size || 0)}
                   </TableCell>
                   <TableCell className="text-sm">
                     {format(new Date(doc.createdAt), "dd MMM yyyy")}
@@ -300,6 +306,8 @@ export default function DocumentsPage() {
                       >
                         {downloadingId === doc._id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : doc.isExternal ? (
+                          <ExternalLink className="h-4 w-4" />
                         ) : (
                           <Download className="h-4 w-4" />
                         )}

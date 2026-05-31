@@ -4,10 +4,13 @@ import axios from "axios";
 export interface DocumentMeta {
   _id: string;
   title: string;
-  originalName: string;
-  mimeType: string;
-  size: number;
-  key: string;
+  originalName?: string;
+  mimeType?: string;
+  size?: number;
+  key?: string;
+  isExternal: boolean;
+  url?: string;
+  allowedViewers: string[];
   category: string;
   tags: string[];
   uploadedBy: {
@@ -77,10 +80,13 @@ export const DocumentService = {
   // Confirm upload and save metadata
   confirmUpload: async (docData: {
     title: string;
-    originalName: string;
-    mimeType: string;
-    size: number;
-    key: string;
+    originalName?: string;
+    mimeType?: string;
+    size?: number;
+    key?: string;
+    isExternal?: boolean;
+    url?: string;
+    allowedViewers?: string[];
     category: string;
     tags: string[];
   }) => {
@@ -121,5 +127,18 @@ export const DocumentService = {
   delete: async (id: string) => {
     const { data } = await api.delete(`/documents/${id}`);
     return data;
+  },
+
+  // Check if a URL already exists as an active document
+  checkUrl: async (url: string) => {
+    const { data } = await api.get("/documents/check-url", { params: { url } });
+    return data as {
+      exists: boolean;
+      document?: {
+        _id: string;
+        title: string;
+        uploadedBy: string;
+      };
+    };
   },
 };
