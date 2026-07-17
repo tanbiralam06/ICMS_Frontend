@@ -88,14 +88,19 @@ export default function EmployeeDetailsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Leaves</CardTitle>
+            <CardTitle className="text-sm font-medium">Leave Balance</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.leave.totalLeaves}</div>
+            <div className="text-2xl font-bold">
+              {stats.leave.remainingLeaves}{" "}
+              <span className="text-sm font-normal text-muted-foreground">
+                days left
+              </span>
+            </div>
             <p className="text-xs text-muted-foreground">
-              {stats.leave.approvedLeaves} approved, {stats.leave.pendingLeaves}{" "}
-              pending
+              {stats.leave.approvedLeaves} days approved, {stats.leave.pendingLeaves}{" "}
+              days pending
             </p>
           </CardContent>
         </Card>
